@@ -16,8 +16,10 @@
 
 ## How to Execute
 Clone this repository ane make sure to have Node.js installed. Execute the following:  
-    npm install  
-    npm start  
+```
+npm install  
+npm start  
+```
 
 ## Description (To be deleted before submission):
 Implementation of a system which enables a group of users to chat securely.  
