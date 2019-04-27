@@ -2,14 +2,22 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>Secure Chat System</title>
+    <link rel="stylesheet" type="text/css" href="css/master.css">
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
+    <h1 id="title">Welcome to Chat!</h1>
+    <!-- All of the Node.js APIs are available in this renderer process.
     We are using Node.js <script>document.write(process.versions.node)</script>,
     Chromium <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+    and Electron <script>document.write(process.versions.electron)</script>.-->
+
+    <div id="messages">
+      
+    </div>
+
+    <input type="text" name="message">
+    <button>Send</button>
 
     <script>
       // You can also require other files to run in this process
