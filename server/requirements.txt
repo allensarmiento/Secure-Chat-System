@@ -1,0 +1,5 @@
+aiohttp>=3.3.2
+configparser>=3.5.0
+cryptography>=2.3
+SQLAlchemy>=1.2.9
+SQLAlchemy-Utils>=0.33.3
