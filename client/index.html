@@ -7,17 +7,26 @@
   </head>
   <body>
     <h1 id="title">Welcome to Chat!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process.
-    We are using Node.js <script>document.write(process.versions.node)</script>,
-    Chromium <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.-->
 
-    <div id="messages">
-      
-    </div>
+    <section id="chat">
+      <div id="chatbox">
+        <p class="chatmessage received">Hello</p>
+      </div>
 
-    <input id="message" type="text" name="message">
-    <button onclick="sendMessage()">Send</button>
+      <input id="message" type="text" name="message">
+      <button onclick="sendMessage()">Send</button>
+    </section>
+
+    <section id="online">
+      <div id="users">
+        <h1>Users</h1>
+        <p>Allen</p>
+        <p>Hector</p>
+        <p>Nathan</p>
+        <p>Stephen</p>
+        <p>Jasper</p>
+      </div>
+    </section>
 
     <script>
       // You can also require other files to run in this process

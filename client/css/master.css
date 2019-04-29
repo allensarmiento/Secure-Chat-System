@@ -3,6 +3,8 @@ html, body {
   margin: 0;
   width: 100%;
   height: 100%;
+  position: relative;
+  overflow: hidden;
   background: rgb(80, 100, 255);
 }
 
@@ -12,17 +14,53 @@ html, body {
   color: white;
 }
 
-#messages {
-  width: 75%;
-  height: 50%;
-  padding: 25px;
+#chat {
+  width: 70%;
+  height: 75%;
+  float: left;
+}
+
+#online {
+  float: left;
+  width: 30%;
+}
+
+#chatbox {
+  width: 85%;
+  height: 75%;
+  padding: 5%;
   margin: 15px;
-  display: block;
+  float: left;
+  position: relative;
+  overflow: scroll;
   background-color: white;
 }
 
+.chatmessage {
+  width: 50%;
+  padding: 5px;
+  margin: 3px;
+  border-radius: 25px;
+}
+
+.sent {
+  float: right;
+  background-color: green;
+  color: white;
+}
+
+.received {
+  float: left;
+  background-color: lightgrey;
+}
+
+#users {
+  float; left;
+  margin: 15px 15px 15px 50px;
+}
+
 input[type=text] {
-  width: 80%;
+  width: 85%;
   height: 25px;
   margin: 10px 5px 10px 15px;
   text-align: right;
