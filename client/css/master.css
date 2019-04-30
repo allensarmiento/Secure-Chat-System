@@ -55,7 +55,7 @@ html, body {
 }
 
 #users {
-  float; left;
+  float: left;
   margin: 15px 15px 15px 50px;
 }
 
