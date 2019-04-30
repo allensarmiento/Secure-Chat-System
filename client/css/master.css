@@ -25,6 +25,17 @@ html, body {
   width: 30%;
 }
 
+.profile-img {
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  padding: 5px;
+  display: inline-block;
+  background: lightgrey;
+  border-radius: 25px;
+  text-align: center;
+}
+
 #chatbox {
   width: 85%;
   height: 75%;
@@ -55,7 +66,7 @@ html, body {
 }
 
 #users {
-  float: left;
+  float; left;
   margin: 15px 15px 15px 50px;
 }
 
