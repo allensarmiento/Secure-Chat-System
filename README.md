@@ -17,8 +17,6 @@
 ## How to Execute
 Clone this repository ane make sure to have Node.js installed. Execute the following:  
 ```
-cd Secure-Chat-System
-cd client
 npm install  
 npm start  
 ```
