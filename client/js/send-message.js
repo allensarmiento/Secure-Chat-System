@@ -18,3 +18,20 @@ function keyPress(e) {
     sendMessage();
   }
 }
+
+function setActiveUser(username) {
+  document.getElementById(username).appendChild(document.createElement("p")).setAttribute("class", "activeUser");
+  document.getElementById(username).querySelector("p").innerText = "✓";
+}
+
+function setInactiveUser(username) {
+  document.getElementById(username).appendChild(document.createElement("p")).setAttribute("class", "inactiveUser");
+  document.getElementById(username).querySelector("p").innerText = "x";
+}
+
+// testing activation of users for login/logout
+setActiveUser("allen");
+setInactiveUser("hector");
+setInactiveUser("nathan");
+setActiveUser("stephen");
+setInactiveUser("jasper");
