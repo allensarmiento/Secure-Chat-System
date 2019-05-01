@@ -66,7 +66,7 @@ html, body {
 }
 
 #users {
-  float; left;
+  float: left;
   margin: 15px 15px 15px 50px;
 }
 
@@ -81,4 +81,20 @@ button {
   height: 25px;
   background: rgb(0, 225, 0);
   color: black;
+}
+
+.activeUser {
+  display: inherit;
+  padding-left: 1em;
+  width: 25px;
+  height: 25px;
+  color: limegreen;
+}
+
+.inactiveUser {
+  display: inherit;
+  padding-left: 1em;
+  width: 25px;
+  height: 25px;
+  color: maroon;
 }
