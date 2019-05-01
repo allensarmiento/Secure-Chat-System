@@ -25,9 +25,9 @@ class DatabaseInit(object):
         db = self.get_session()
         try:
             for i in range(1, 10):
-                user = ChatUser.ChatUser(i, "Name{}".format(i))
+                user = ChatUser.ChatUser(i, "Name{}".format(i), "password{}".format(i))
                 print("Adding {} to database.".format(user))
-                db.merge(ChatUser.ChatUser(i, "Name{}".format(i)))
+                db.merge(user)
             db.commit()
             print("ok")
         except Exception as ex:

@@ -23,5 +23,6 @@ class TestDatabaseInit(TestBase.TestBase):
             self.assertEqual(index, u.get_id())
             self.assertIsInstance(u.get_id(), int)
             self.assertEqual("Name{}".format(index), u.get_name())
+            self.assertTrue(u.test_password("password{}".format(index)))
             index += 1
 
