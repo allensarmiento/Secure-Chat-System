@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
  git \
  build-essential \
  zip \
+ libffi-dev \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /ChatApp
 RUN git clone https://github.com/allensarmiento/Secure-Chat-System.git

@@ -1,4 +1,5 @@
 from ChatServer.Database import DatabaseManager
+from WebSocketServer import WebSocketServer
 
 
 class Main(object):
@@ -6,6 +7,7 @@ class Main(object):
     def main(cls):
         db_manage = DatabaseManager.DatabaseManager()
         db_manage.db_init()
+        WebSocketServer.WebSocketServer.start_server()
 
 
 if __name__=="__main__":

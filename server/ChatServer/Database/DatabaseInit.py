@@ -25,11 +25,11 @@ class DatabaseInit(object):
         db = self.get_session()
         try:
             for i in range(1, 10):
-                user = ChatUser.ChatUser(i, "Name{}".format(i), "password{}".format(i))
-                print("Adding {} to database.".format(user))
-                db.merge(user)
-            db.commit()
-            print("ok")
+                if not db.query(ChatUser.ChatUser).filter(ChatUser.ChatUser.user_id == i).one_or_none():
+                    user = ChatUser.ChatUser(i, "Name{}".format(i), "password{}".format(i))
+                    print("Adding {} to database.".format(user))
+                    db.merge(user)
+                db.commit()
         except Exception as ex:
             traceback.print_exc()
             print(ex)
