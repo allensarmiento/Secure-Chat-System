@@ -7,4 +7,3 @@ pytest
 aiohttp_session
 bcrypt
 pyopenssl
-pycrypto
