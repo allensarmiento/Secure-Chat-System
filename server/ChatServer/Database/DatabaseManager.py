@@ -1,5 +1,5 @@
-from ChatServer.Utilities import Singleton
-from ChatServer.Database import DatabaseInit
+from Utilities import Singleton
+from Database import DatabaseInit
 from sqlalchemy.orm import Session
 
 

@@ -1,5 +1,5 @@
 import asyncio
-from ChatServer.Database import DatabaseManager
+from Database import DatabaseManager
 from functools import partial
 
 

@@ -1,4 +1,4 @@
-from ChatServer.Database import DatabaseManager
+from Database import DatabaseManager
 from WebSocketServer import WebSocketServer
 
 

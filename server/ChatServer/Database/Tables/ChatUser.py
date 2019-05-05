@@ -1,16 +1,12 @@
-from ChatServer.Database.Tables import DeclarativeBase
+from Database.Tables import DeclarativeBase
 from sqlalchemy import Column, Integer, String, LargeBinary, Binary
 import bcrypt
 from OpenSSL import crypto
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_public_key
-from ChatServer.Database import DatabaseManager
+from Database import DatabaseManager
 import asyncio
 from functools import partial
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import utils
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 

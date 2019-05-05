@@ -1,4 +1,4 @@
-from ChatServer.Utilities import Singleton
+from Utilities import Singleton
 import argparse
 
 

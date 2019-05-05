@@ -1,6 +1,6 @@
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker, Session, scoped_session
-from ChatServer.Database.Tables import DeclarativeBase, ChatUser
+from Database.Tables import DeclarativeBase, ChatUser
 import traceback
 from sqlalchemy.pool import StaticPool
 
