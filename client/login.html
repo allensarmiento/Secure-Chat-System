@@ -3,10 +3,22 @@
   <head>
     <meta charset="UTF-8">
     <title>Secure Chat System</title>
-    <link rel="stylesheet" type="text/css" href="css/master.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
   </head>
   <body>
     <h1 id="title">Welcome to Chat!</h1>
+
+    <section id="login-box">
+      <form>
+        Username<br/>
+        <input type="text" name="username"><br/>
+        Password<br/>
+        <input type="password"><br/>
+      </form>
+
+      <!-- NOTE: For testing purposes, just clicking the sign in will redirect to the main page. This will need to be changed leter on. -->
+      <button type="submit" onclick="window.location='index.html'">Sign in</button>
+    </section>
 
     <script>
       // You can also require other files to run in this process

@@ -1,0 +1,39 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #536472;
+}
+
+#title {
+    text-align: center;
+}
+
+form {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    padding: 25px 0;
+}
+
+input {
+    margin: 0;
+    padding: 10px;
+    left: 50%;
+}
+
+#login-box {
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    position: relative;
+    background-color: #eeefff;
+}
+
+#login-box button {
+    width: 80%;
+    height: 25px;
+    margin: 0 auto;
+    position: absolute;
+    bottom: 15%;
+    background: red;
+}
