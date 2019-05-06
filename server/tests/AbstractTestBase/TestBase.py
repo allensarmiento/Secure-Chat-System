@@ -1,7 +1,7 @@
 from unittest import TestCase
-from ChatServer.Database import DatabaseManager
-from ChatServer.Utilities import Singleton
-from ChatServer.WebSocketServer import WebSocketServer
+from Database import DatabaseManager
+from Utilities import Singleton
+from WebSocketServer import WebSocketServer
 import sys
 
 

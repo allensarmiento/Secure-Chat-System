@@ -1,37 +1,44 @@
 from WebSocketServer.EndPoints import EndPointBase
 from aiohttp import web
 from aiohttp.web import Request
-from aiohttp_session import get_session
-from Database.Tables import ChatUser
+from Database.Tables import ChatUser, ChatUserTokens
+import traceback
 
 
 class User(EndPointBase.EndPointBase):
     async def login(self, request: Request):
-        session = await get_session(request)
-        login_ok = False
         try:
             body = await request.json()
-            user_id = session['id'] if 'id' in session else body.get('id')
+            user_id = body.get('id')
             user_pass = body.get('password')
             if not user_id:
                 return web.HTTPBadRequest(reason="You are missing the id field for the login user.")
             if not user_pass:
-                return web.HTTPBadRequest(reason="You are missing the password field. Please send the password encrypted by your private key.")
+                return web.HTTPBadRequest(reason="You are missing the password field. Please send hashed password.")
             else:
                 user: ChatUser.ChatUser = await ChatUser.ChatUser.get_user(user_id)
                 if not user:
                     return web.HTTPBadRequest(reason="This user is not registered with the system.")
                 if await self.run_executor(user.test_password, user_pass):
-                    session['id'] = user_id
-                    session['log_ok'] = True
-                    login_ok = False
-                    return web.Response(text="Login ok")
+                    data = {'id': user_id, 'token': await ChatUser.ChatUser.generate_token(user_id)}
+                    return web.json_response(data)
                 else:
                     return web.HTTPForbidden(reason="Bad password.")
         except Exception as ex:
-            print(ex)
-            session.invalidate()
-            return web.HTTPServerError(text="{}".format(ex))
-        finally:
-            if not login_ok:
-                session.invalidate()
+            traceback.print_exc()
+            raise web.HTTPServerError(text="{}".format(ex))
+
+    async def user_name(self, request: Request):
+        """returns the user's name"""
+        user = await self.get_session_user(request)
+        return web.json_response({'name': user.get_name()})
+
+    async def user_id(self, request: Request):
+        user = await self.get_session_user(request)
+        return web.json_response({'id': user.get_id()})
+
+    async def validate(self, request: Request):
+        if await ChatUserTokens.ChatUserTokens.token_valid(await self.get_token(request)):
+            return web.json_response({'valid': True})
+        else:
+            return web.json_response({'valid': False})

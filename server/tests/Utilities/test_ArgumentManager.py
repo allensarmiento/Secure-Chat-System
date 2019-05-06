@@ -1,5 +1,5 @@
 from tests.AbstractTestBase import TestBase
-from ChatServer.Utilities import ArgumentManager
+from Utilities import ArgumentManager
 import sys
 
 

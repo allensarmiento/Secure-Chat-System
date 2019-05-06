@@ -13,4 +13,5 @@ RUN pip3 install setuptools
 WORKDIR /ChatApp/Secure-Chat-System/server
 RUN pip3 install --upgrade -r requirements.txt
 WORKDIR /app
+EXPOSE 8080/tcp
 ENTRYPOINT ["python3", "/ChatApp/Secure-Chat-System/server/ChatServer"]

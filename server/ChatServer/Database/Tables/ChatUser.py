@@ -1,14 +1,15 @@
-from Database.Tables import DeclarativeBase
+from Database.Tables import DeclarativeBase, ChatUserTokens
 from sqlalchemy import Column, Integer, String, LargeBinary, Binary
+from sqlalchemy.types import LargeBinary
 import bcrypt
 from OpenSSL import crypto
 from Database import DatabaseManager
 import asyncio
 from functools import partial
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
+from sqlalchemy.orm import relationship
+from aiohttp import web
+import base64
+import hashlib
 
 
 class ChatUser(DeclarativeBase.Base):
@@ -16,13 +17,17 @@ class ChatUser(DeclarativeBase.Base):
 
     user_id = Column(Integer, primary_key=True, nullable=False, autoincrement=False)
     user_name = Column(String, default="", nullable=False, index=True)
-    user_password = Column(Binary, nullable=False)
+    user_password = Column(LargeBinary, nullable=False)
     user_public_key = Column(Binary, nullable=False)
+
+    object_user_tokens = relationship("ChatUserTokens", cascade="save-update,merge,delete,delete-orphan",
+                                      uselist=True,
+                                      back_populates="object_user")
 
     def __init__(self, user_id: int, user_name: str, user_pass: str):
         self.user_id = user_id
         self.user_name = user_name
-        self.user_password = bcrypt.hashpw(user_pass.encode('utf-8'), bcrypt.gensalt())
+        self.user_password = base64.encodebytes(bcrypt.hashpw(user_pass.encode("utf-8"), b'$2b$12$RhUW67z9C.vlzlIU3ED68O'))  # todo remove me
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 4096)
         self.user_public_key = crypto.dump_publickey(crypto.FILETYPE_PEM, k)
@@ -38,13 +43,9 @@ class ChatUser(DeclarativeBase.Base):
 
     def test_password(self, input_password_encrypted: str):
         """Returns true if the user password matches db pass, else false"""
-        return bcrypt.checkpw(input_password_encrypted.encode('utf-8'), self.encrypt_string(self.user_password))
-
-    def encrypt_string(self, decrypted_string):
-        key = serialization.load_pem_public_key(self.user_public_key, backend=default_backend())
-        return key.encrypt(decrypted_string, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA3_256()),
-                                                       algorithm=hashes.SHA3_256(),
-                                                       label=None))
+        user_pass = base64.b64decode(self.user_password)
+        input_pass = base64.b64decode(input_password_encrypted)
+        return user_pass == input_pass
 
     def __str__(self):
         return "ID: {} Name: {}".format(self.user_id, self.user_name)
@@ -58,6 +59,26 @@ class ChatUser(DeclarativeBase.Base):
             db.close()
 
     @classmethod
+    def _generate_token(cls, user_id):
+        db = DatabaseManager.DatabaseManager.get_session()
+        try:
+            user = cls._get_user(user_id)
+            if not user:
+                raise web.HTTPNotFound(reason="User not found.")
+            else:
+                token = ChatUserTokens.ChatUserTokens(user.get_id())
+                db.add(token)
+                db.commit()
+                return token.token
+        except Exception as ex:
+            raise web.HTTPServerError(reason=str(ex))
+        finally:
+            db.close()
+
+    @classmethod
     async def get_user(cls, user_id):
         return await asyncio.get_event_loop().run_in_executor(None, partial(cls._get_user, user_id))
 
+    @classmethod
+    async def generate_token(cls, user_id) -> str:
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._generate_token, user_id))
