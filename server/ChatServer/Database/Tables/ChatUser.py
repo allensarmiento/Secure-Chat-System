@@ -98,3 +98,4 @@ class ChatUser(DeclarativeBase.Base):
     @classmethod
     async def generate_token(cls, user_id) -> str:
         return await asyncio.get_event_loop().run_in_executor(None, partial(cls._generate_token, user_id))
+

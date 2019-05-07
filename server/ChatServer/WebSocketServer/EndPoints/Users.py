@@ -30,20 +30,12 @@ class User(EndPointBase.EndPointBase):
 
     async def user_name(self, request: Request):
         """returns the user's name"""
-        try:
-            user = await self.get_session_user(request)
-            return web.json_response({'name': user.get_name()})
-        except Exception as ex:
-            traceback.print_exc()
-            return web.HTTPInternalServerError(reason=str(ex))
+        user = await self.get_session_user(request)
+        return web.json_response({'name': user.get_name()})
 
     async def user_id(self, request: Request):
-        try:
-            user = await self.get_session_user(request)
-            return web.json_response({'id': user.get_id()})
-        except Exception as ex:
-            traceback.print_exc()
-            return web.HTTPInternalServerError(reason=str(ex))
+        user = await self.get_session_user(request)
+        return web.json_response({'id': user.get_id()})
 
     async def validate(self, request: Request):
         try:
@@ -54,3 +46,19 @@ class User(EndPointBase.EndPointBase):
         except Exception as ex:
             traceback.print_exc()
             return web.HTTPInternalServerError(reason=str(ex))
+
+    async def logout_single(self, request):
+        try:
+            await ChatUserTokens.ChatUserTokens.revoke_single_token(await self.get_token(request))
+            return web.json_response({"deleted": True})
+        except Exception as ex:
+            return web.HTTPInternalServerError(reason=str(ex))
+
+    async def logout_all(self, request):
+        user = await self.get_session_user(request)
+        try:
+            await ChatUserTokens.ChatUserTokens.revoke_all_tokens(user.get_id())
+            return web.json_response({"deleted": True})
+        except Exception as ex:
+            return web.HTTPInternalServerError(reason=str(ex))
+
