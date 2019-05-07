@@ -1,9 +1,11 @@
 from tests.AbstractTestBase import TestBase
 from Database import DatabaseInit
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from Database.Tables import ChatUser
 import bcrypt
 import base64
+
 
 class TestDatabaseInit(TestBase.TestBase):
     def setUp(self) -> None:
@@ -28,4 +30,12 @@ class TestDatabaseInit(TestBase.TestBase):
             password = base64.b64encode(password)
             self.assertTrue(u.test_password(password))
             index += 1
+
+    def test_unique_username(self):
+        db = self.db.get_session()
+        db.add(ChatUser.ChatUser(1, "username_unique", "pass"))
+        db.commit()
+        db.add(ChatUser.ChatUser(2, "username_unique", "pass"))
+        with self.assertRaises(IntegrityError) as ex:
+            db.commit()
 

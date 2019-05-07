@@ -16,7 +16,7 @@ class ChatUser(DeclarativeBase.Base):
     __tablename__ = 'chatusers'
 
     user_id = Column(Integer, primary_key=True, nullable=False, autoincrement=False)
-    user_name = Column(String, default="", nullable=False, index=True)
+    user_name = Column(String, unique=True, nullable=False, index=True)
     user_password = Column(LargeBinary, nullable=False)
     user_public_key = Column(Binary, nullable=False)
 
@@ -43,15 +43,19 @@ class ChatUser(DeclarativeBase.Base):
 
     def test_password(self, input_password_encrypted: str):
         """Returns true if the user password matches db pass, else false"""
-        user_pass = base64.b64decode(self.user_password)
-        input_pass = base64.b64decode(input_password_encrypted)
-        return user_pass == input_pass
+        try:
+            user_pass = base64.b64decode(self.user_password)
+            input_pass = base64.b64decode(input_password_encrypted)
+            return user_pass == input_pass
+
+        except:
+            return False
 
     def __str__(self):
         return "ID: {} Name: {}".format(self.user_id, self.user_name)
 
     @classmethod
-    def _get_user(cls, user_id):
+    def _get_user_byid(cls, user_id):
         db = DatabaseManager.DatabaseManager.get_session()
         try:
             return db.query(cls).filter(cls.user_id == user_id).one_or_none()
@@ -59,10 +63,18 @@ class ChatUser(DeclarativeBase.Base):
             db.close()
 
     @classmethod
+    def _get_user_byname(cls, user_name):
+        db = DatabaseManager.DatabaseManager.get_session()
+        try:
+            return db.query(cls).filter(cls.user_name == user_name).one_or_none()
+        finally:
+            db.close()
+
+    @classmethod
     def _generate_token(cls, user_id):
         db = DatabaseManager.DatabaseManager.get_session()
         try:
-            user = cls._get_user(user_id)
+            user = cls._get_user_byid(user_id)
             if not user:
                 raise web.HTTPNotFound(reason="User not found.")
             else:
@@ -77,7 +89,11 @@ class ChatUser(DeclarativeBase.Base):
 
     @classmethod
     async def get_user(cls, user_id):
-        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._get_user, user_id))
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._get_user_byid, user_id))
+
+    @classmethod
+    async def get_user_byname(cls, user_name):
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._get_user_byname, user_name))
 
     @classmethod
     async def generate_token(cls, user_id) -> str:
