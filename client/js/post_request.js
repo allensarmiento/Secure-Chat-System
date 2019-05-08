@@ -26,9 +26,6 @@ const Url = '/';
 // When the submit button in the login.html form
 // is clicked, this function is activated
 $('#btn').click(function() {
-    /* This is for debugging purposes only */
-    alert(hashAndSalt($('#password').val()));
-
     const data = {
         username: $('#username').val(),
         password: hashAndSalt($('#password').val())
