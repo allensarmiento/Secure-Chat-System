@@ -60,13 +60,13 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit()
 })
 
-app.on('activate', function () {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
+// app.on('activate', function () {
+//   // On macOS it's common to re-create a window in the app when the
+//   // dock icon is clicked and there are no other windows open.
   
-  // at some point we will change the first window to the login screen
-  //if (loginWindow === null) createLoginWindow()
-})
+//   // at some point we will change the first window to the login screen
+//   //if (loginWindow === null) createLoginWindow()
+// })
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

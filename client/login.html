@@ -10,21 +10,24 @@
 
     <section id="login-box">
       <h1>Sign in</h1>
-      <form id="login-form">
-        <p>Username</p>
-        <input type="text" name="username"><br/>
-        <p>Password</p>
-        <input type="password"><br/>
-      <!-- NOTE: For testing purposes, just clicking the sign in will redirect to the main page. This will need to be changed leter on. -->
-      <button type="submit" value="Sign In">Sign In</button>
-    </form>
 
+      <form> 
+        <p>Username</p>
+        <input type="text" id="username" name="username"><br/>
+        <p>Password</p>
+        <input type="password" id="password"><br/>
+        <button id="btn" type="submit">Sign in</button>
+      </form>
+
+      <!-- NOTE: For testing purposes, just clicking the sign in will redirect to the main page. This will need to be changed leter on. -->
+      <!--<button type="submit" onclick="window.location='index.html'">Sign in</button>-->
     </section>
 
     <script>
       // You can also require other files to run in this process
-      require('./renderer.js')
+      //require('./renderer.js')
     </script>
-    <script src="js/login.js"></script>
+    <!-- <script src='js/login.js'></script> -->
+    <script src='js/post_request.js'></script>
   </body>
 </html>

@@ -5,6 +5,6 @@ form.addEventListener("submit", function(event){
     //make ajax call here
 
     //for now make it default to valid
-    window.location.assign("index.html");
+    window.location.assign("../index.html");
 });
 

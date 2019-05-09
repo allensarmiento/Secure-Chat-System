@@ -48,6 +48,8 @@ class WebSocketServer(object):
         app.router.add_post('/users/name', self.users.user_name)
         app.router.add_post('/users/id', self.users.user_name)
         app.router.add_post('/users/validate', self.users.validate)
+        app.router.add_delete('/users/logout', self.users.logout_single)
+        app.router.add_delete('/users/logout_all', self.users.logout_all)
         return app
 
     @classmethod
