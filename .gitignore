@@ -1,3 +1,7 @@
 /*.DS_Store
 /client/node_modules/
 /client/package-lock.json
+/client/.config
+/client/.npm
+*.pem
+Database.db

@@ -21,6 +21,15 @@ npm install
 npm start  
 ```
 
+##### In case you get NODE_MODULE_VERSION errors for bcrypt
+
+```
+npm install --save-dev electron-rebuild
+
+# Every time you run "npm install", run this:
+./node_modules/.bin/electron-rebuild
+```
+
 ## Description (To be deleted before submission):
 Implementation of a system which enables a group of users to chat securely.  
 All users are registered with the chat server. When the user wants to chat with  
