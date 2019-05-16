@@ -70,6 +70,12 @@ html, body {
   margin: 15px 15px 15px 50px;
 }
 
+#logout-btn {
+  width: 100%;
+  background-color: red;
+  
+}
+
 input[type=text] {
   width: 85%;
   height: 25px;
