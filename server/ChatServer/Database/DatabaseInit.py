@@ -26,7 +26,7 @@ class DatabaseInit(object):
         try:
             for i in range(1, 10):
                 if not db.query(ChatUser.ChatUser).filter(ChatUser.ChatUser.user_id == i).one_or_none():
-                    user = ChatUser.ChatUser(i, "Name{}".format(i), "password{}".format(i))
+                    user = ChatUser.ChatUser(i, "Name{}".format(i), "password{}".format(i), "offline")
                     print("Adding {} to database.".format(user))
                     db.merge(user)
                 db.commit()

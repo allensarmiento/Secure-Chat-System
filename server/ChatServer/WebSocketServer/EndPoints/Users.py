@@ -62,4 +62,9 @@ class User(EndPointBase.EndPointBase):
             return web.json_response({"deleted": True})
         except Exception as ex:
             return web.HTTPInternalServerError(reason=str(ex))
-
+    
+    async def user_status(self, request: Request):
+        """returns the user's status"""
+        body = await request.json()
+        user = await ChatUser.ChatUser.get_user_byname(body.get('username'))
+        return web.json_response({'status': user.get_status()})

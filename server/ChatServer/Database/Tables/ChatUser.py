@@ -19,15 +19,18 @@ class ChatUser(DeclarativeBase.Base):
     user_name = Column(String, unique=True, nullable=False, index=True)
     user_password = Column(LargeBinary, nullable=False)
     user_public_key = Column(Binary, nullable=False)
+    user_status = Column(String, nullable=False)
 
     object_user_tokens = relationship("ChatUserTokens", cascade="save-update,merge,delete,delete-orphan",
                                       uselist=True,
                                       back_populates="object_user")
 
-    def __init__(self, user_id: int, user_name: str, user_pass: str):
+    def __init__(self, user_id: int, user_name: str, user_pass: str, user_status: str):
         self.user_id = user_id
         self.user_name = user_name
         self.user_password = base64.encodebytes(bcrypt.hashpw(user_pass.encode("utf-8"), b'$2b$12$RhUW67z9C.vlzlIU3ED68O'))  # todo remove me
+        self.user_status = user_status
+
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 4096)
         self.user_public_key = crypto.dump_publickey(crypto.FILETYPE_PEM, k)
@@ -40,6 +43,9 @@ class ChatUser(DeclarativeBase.Base):
 
     def get_name(self) -> str:
         return self.user_name
+
+    def get_status(self) -> str:
+        return self.user_status
 
     def test_password(self, input_password_encrypted: str):
         """Returns true if the user password matches db pass, else false"""
@@ -88,6 +94,17 @@ class ChatUser(DeclarativeBase.Base):
             db.close()
 
     @classmethod
+    def _set_status(cls, user_name, user_status):
+        db = DatabaseManager.DatabaseManager.get_session()
+        try:
+            user = db.query(cls).filter(cls.user_name == user_name).one_or_none()
+            user.user_status = user_status
+            db.commit()
+        finally:
+            db.close()
+    
+
+    @classmethod
     async def get_user(cls, user_id):
         return await asyncio.get_event_loop().run_in_executor(None, partial(cls._get_user_byid, user_id))
 
@@ -98,4 +115,8 @@ class ChatUser(DeclarativeBase.Base):
     @classmethod
     async def generate_token(cls, user_id) -> str:
         return await asyncio.get_event_loop().run_in_executor(None, partial(cls._generate_token, user_id))
+    
+    @classmethod
+    async def set_status(cls, user_name, user_status):
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._set_status, user_name, user_status))
 
