@@ -5,3 +5,4 @@
 /client/.npm
 *.pem
 Database.db
+__pycache__

@@ -7,6 +7,7 @@ import traceback
 
 class User(EndPointBase.EndPointBase):
     async def login(self, request: Request):
+        print(await request.json())
         try:
             body = await request.json()
             user_name = body.get('username')

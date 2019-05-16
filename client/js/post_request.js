@@ -1,3 +1,5 @@
+//TODO: at some point remove all console.log statements
+
 'use strict';
 let crypto;
 try {
@@ -15,20 +17,60 @@ var hashAndSalt = function(password) {
     return btoa(password_hash);
 }
 
-// doesn't work since the initial response from the server doesn't work
-// This function validates the user's token is valid.
+const Url = 'http:localhost:8080/login'; 
+
+// When the submit button in the login.html form
+// is clicked, this function is activated
+$('#btn').click(function() {
+    event.preventDefault();
+    const data = {
+        'username': $('#username').val(),
+        'password': hashAndSalt($('#password').val())
+    };
+    console.log(data)
+  
+    // since web requests are asynchronous we need to make promises
+    loginUser(data).done(function(data){
+        console.log(data)
+        if(data){
+            console.log("hey it worked")
+            window.location.href = "index.html"
+        }
+    })
+});
+
+
+
+function loginUser(data){
+    return $.ajax({
+         url: Url, 
+         contentType: 'application/json',
+         type: 'POST',
+         data: JSON.stringify(data),
+         success: function(result) {
+             console.log(result)
+             validateUser(result).done(function(data){
+                 console.log(data)
+                 return true;
+             });
+         },
+         error: function(error) {
+             console.log(`Error ${error}`)
+         }
+     })
+ }
+ 
+
 function validateUser(response){
-    //doesn't actually work yet since I can't see response from server
-    //data = response.token
-    //temp value
-    Data = {"token": "CPKGkXpK2NR6iURZ7joX8toySsnWGLufmUZdKLSoiqkvipW0NtIv9bMlI-4ibfacm0_yzJHW1nv134d5RQMd00uXbR_svA2Jgu8VQSwvU3c5f-38fZZoYyrt4OWwc6SmBB9VA8laC_RJ1HGhQD1MYolm9i54gcmzFHYBBoBrpCU"}
-    $.ajax({
+    console.log(response.token)
+    var data = {'token':response.token}
+    return $.ajax({
         url: 'http:localhost:8080/users/validate',
-        type: "POST",
-        data: Data,
+        contentType: 'application/json',
+        type: 'POST',
+        data: JSON.stringify(data),
         success: function(result){
-            //for now return true
-            // should the response `valid` be true then return true
+            console.log(result.valid)
             if(result.valid){
                 return true;
             }
@@ -38,38 +80,8 @@ function validateUser(response){
         },
         error: function(error) {
             console.log(`Error ${error}`)
+            return false;
         }
 
     })
 }
-const Url = 'http:localhost:8080/login'; 
-
-// When the submit button in the login.html form
-// is clicked, this function is activated
-$('#btn').click(function() {
-    event.preventDefault();
-    const data = {
-        username: $('#username').val(),
-        password: hashAndSalt($('#password').val())
-    };
-    console.log(data)
-    $.ajax({
-        url: Url, 
-        type: "POST",
-        data: data,
-        success: function(result) {
-            // On success should return user id and user token which can be used to identify user
-            console.log(result)
-            // successful token validation, go to page
-            if(validateUser(result)){
-                window.location.href = "index.html"
-            } 
-            else{
-                //consuming error -- eventually we want to let the user know they typed the wrong username/password
-            }
-        },
-        error: function(error) {
-            console.log(`Error ${error}`)
-        }
-    });
-});
