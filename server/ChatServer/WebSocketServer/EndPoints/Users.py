@@ -22,6 +22,7 @@ class User(EndPointBase.EndPointBase):
                     return web.HTTPBadRequest(reason="This user is not registered with the system.")
                 if await self.run_executor(user.test_password, user_pass):
                     data = {'id': user.get_id(), 'token': await ChatUser.ChatUser.generate_token(user.get_id())}
+                    await ChatUser.ChatUser.set_status(user.get_name(), "online")
                     return web.json_response(data)
                 else:
                     return web.HTTPForbidden(reason="Bad password.")
@@ -50,6 +51,7 @@ class User(EndPointBase.EndPointBase):
 
     async def logout_single(self, request):
         try:
+            await ChatUser.ChatUser.set_status((await self.get_session_user(request)).get_name(), "offline")
             await ChatUserTokens.ChatUserTokens.revoke_single_token(await self.get_token(request))
             return web.json_response({"deleted": True})
         except Exception as ex:
