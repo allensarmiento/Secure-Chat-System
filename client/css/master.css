@@ -84,17 +84,23 @@ button {
 }
 
 .activeUser {
-  display: inherit;
-  padding-left: 1em;
-  width: 25px;
-  height: 25px;
-  color: limegreen;
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  padding: 5px;
+  display: inline-block;
+  border-radius: 25px;
+  text-align: center;
+  background-color: #32cd32;
 }
 
 .inactiveUser {
-  display: inherit;
-  padding-left: 1em;
-  width: 25px;
-  height: 25px;
-  color: #ffa69e;
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  padding: 5px;
+  display: inline-block;
+  border-radius: 25px;
+  text-align: center;
+  background-color: #ffa69e;
 }
