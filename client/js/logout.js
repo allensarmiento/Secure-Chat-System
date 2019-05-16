@@ -1,12 +1,12 @@
 const $ = require('jQuery');
 
 // URL to be added
-const Url = '';
+const Url = 'http:localhost:8080/logout';
 
 $('#logout-btn').click(function() {
     event.preventDefault();
     const data = {
-        // Need a value for the username
+        // TODO: Need a value for the username
         username: ''
     };
     console.log(data);
