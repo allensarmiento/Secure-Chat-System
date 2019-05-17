@@ -110,3 +110,12 @@ button {
   text-align: center;
   background-color: #ffa69e;
 }
+
+.active-chat{
+  padding-left: 15px;
+}
+
+.signature-type{
+  display: inherit;
+  
+}
