@@ -102,6 +102,17 @@ class ChatUser(DeclarativeBase.Base):
             db.commit()
         finally:
             db.close()
+
+    @classmethod
+    def _list_all_users(cls, user_name):
+        db = DatabaseManager.DatabaseManager.get_session()
+        users = []
+        try:
+            for user in db.query(cls).filter(cls.user_name != user_name).all():
+                users.append({"user_id": user.get_id(), "user_name": user.get_name()})
+            return users
+        finally:
+            db.close()
     
 
     @classmethod
@@ -119,4 +130,9 @@ class ChatUser(DeclarativeBase.Base):
     @classmethod
     async def set_status(cls, user_name, user_status):
         return await asyncio.get_event_loop().run_in_executor(None, partial(cls._set_status, user_name, user_status))
+
+    @classmethod
+    async def list_all_users(cls, user_name):
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._list_all_users, user_name))
+
 

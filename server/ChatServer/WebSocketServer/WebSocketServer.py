@@ -48,6 +48,7 @@ class WebSocketServer(object):
         app.router.add_post('/users/name', self.users.user_name)
         app.router.add_post('/users/id', self.users.user_name)
         app.router.add_post('/users/status', self.users.user_status)
+        app.router.add_post('/users/all_users', self.users.all_users)
         app.router.add_post('/users/validate', self.users.validate)
         app.router.add_post('/users/chat', self.users.symmetric_key)
         app.router.add_delete('/users/logout', self.users.logout_single)

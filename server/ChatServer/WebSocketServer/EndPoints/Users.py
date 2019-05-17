@@ -30,6 +30,10 @@ class User(EndPointBase.EndPointBase):
             traceback.print_exc()
             return web.HTTPServerError(text="{}".format(ex))
 
+    async def all_users(self, request: Request):
+        user = await self.get_session_user(request)
+        return web.json_response({"users" : await ChatUser.ChatUser.list_all_users(user.get_name())})
+
     async def user_name(self, request: Request):
         """returns the user's name"""
         user = await self.get_session_user(request)
