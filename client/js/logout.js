@@ -1,20 +1,15 @@
-const $ = require('jQuery');
+// already declared in send-message.js
+// const $ = require('jQuery');
 
-// URL to be added
-const Url = 'http:localhost:8080/logout';
+const Url = 'http:localhost:8080/users/logout';
 
 $('#logout-btn').click(function() {
     event.preventDefault();
     const data = {
-        // TODO: Need a value for the username
-        username: ''
+        token: window.localStorage.getItem("token")
     };
-    console.log(data);
-
     logoutUser(data).done(function(data) {
-        console.log(data);
         if (data) {
-            console.log("User logged out");
             window.location.href = "login.html";
         }
     });
@@ -24,7 +19,7 @@ function logoutUser(data) {
     return $.ajax({
         url: Url,
         contentType: 'application/json',
-        type: 'POST',
+        type: 'DELETE',
         data: JSON.stringify(data),
         success: function(result) {
             console.log(result);
