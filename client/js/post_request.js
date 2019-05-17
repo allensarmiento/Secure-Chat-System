@@ -31,9 +31,9 @@ $('#btn').click(function() {
   
     // since web requests are asynchronous we need to make promises
     loginUser(data).done(function(data){
-        console.log(data)
+        window.localStorage.setItem("token", data.token)
+        console.log(window.localStorage.getItem("token"))
         if(data){
-            console.log("hey it worked")
             window.location.href = "index.html"
         }
     })
@@ -48,9 +48,7 @@ function loginUser(data){
          type: 'POST',
          data: JSON.stringify(data),
          success: function(result) {
-             console.log(result)
              validateUser(result).done(function(data){
-                 console.log(data)
                  return true;
              });
          },
@@ -70,7 +68,6 @@ function validateUser(response){
         type: 'POST',
         data: JSON.stringify(data),
         success: function(result){
-            console.log(result.valid)
             if(result.valid){
                 return true;
             }

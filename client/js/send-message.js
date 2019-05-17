@@ -1,4 +1,7 @@
 const $ = require('jQuery');
+const crypto = require('crypto');
+var path = require("path");
+var fs = require("fs");
 
 function sendMessage() {
   let message = document.getElementById("message").value;
@@ -100,9 +103,21 @@ function startChatting(){
   else{
     console.log(chatters);
     fetchSymmetricKey(Array.from(chatters)).done(function (result) {
+      console.log(decryptSymmetricKey(result))
     })
   }
 }
+
+// We will grab the private key from our directory, and the symmetric key will be found by the user number
+function decryptSymmetricKey(symKey){
+  var relativePath = path.relative(`../../user_private_key_${user.slice(-1)}.pem`)
+  var privateKey = fs.readFileSync(relativePath, "utf8")
+  var buffer = Buffer.from(symKey, "base64")
+  var decrypted = crypto.privateDecrypt(privateKey, buffer)
+  return decrypted.toString("utf8")
+}
+
+
 
 // on load, we check who is online
 function loadOnlineStatus(){
