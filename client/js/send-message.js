@@ -16,15 +16,65 @@ function sendMessage() {
 }
 */
 
+/**
+ * @return signatureType - Returns either rsa or dsa
+ */
+function getSignatureValue() {
+    var signatureType = docuement.getElementsByName('signature');
+
+    for (let i = 0; i < signatureType.length; i++) {
+        if (signatureType[i].checked) {
+            return signatureType[i].value;
+        }
+    }
+    return null;
+}
+
+/**
+ * @param {string} message - Message typed in input field
+ * @return signature
+ */
+function signMsg(message, privateKey) {
+    let signType = getSignatureValue();
+
+    let sign;
+    if (signType === 'rsa') {
+        sign = crypto.createSign('RSA-SHA256');
+    } else if (signType === 'dsa') {
+        // NOTE: Couldn't find DSA, so may have to look for a way to import it.
+        sign = crypto.createSign('DSA-SHA256'); 
+    }
+    sign.update(message);
+    sign.end();
+    const signature = sign.sign(privateKey);
+    
+    return signature;
+}
+
+/**
+ * @param {string} message - Message typed in input field
+ * @param publicKey - public key
+ * @param signature - signature
+ */
+function verifyMsg(message, publicKey, signature) {
+    const verify = crypto.createVerify('SHA256');
+    verify.update(message);
+    verify.end();
+    return verify.verify(publicKey, signature);
+}
+
 $('#send-btn').click(function() {
     event.preventDefault();
 
     // Data is pass in:
     //  - token = username
     //  - message = message the user entered
+    //  - signature = signature returned from signMsg function
+    let message = document.getElementById("message").value;
     const data = {
         token: window.localStorage.getItem("token"),
-        message: document.getElementById("message").value
+        message: message,
+        signature: signMsg(message)
     };
 
     // Verify the message has been sent
