@@ -32,30 +32,6 @@ function setInactiveUser(username) {
   document.getElementById(username).setAttribute("class", "inactiveUser");
 }
 
-// checkOnlineStatus only expects the name of the user
-function checkOnlineStatus(user){
-    var data = {'username': user}
-    return $.ajax({
-      url: 'http://localhost:8080/users/status', 
-      contentType: 'application/json',
-      type: 'POST',
-      data: JSON.stringify(data),
-      dataType: 'json',
-      success: function(result) {
-          if (result.status == "online") {
-            result.result = true
-            return result
-          }
-          else {
-            result.result = false
-            return result
-          }
-      },
-      error: function(error) {
-          console.log(`Error ${JSON.stringify(error)}`)
-      }
-    })
-}
 
 function fetchSymmetricKey(chatters){
   var data = {'usernames': chatters}
@@ -86,7 +62,6 @@ function addChatter(user){
     }
     else
     {
-      //TODO: then let user know that person is offline explicitly..?
       setInactiveUser(result.name);
       alert("USER : " + result.name + " is offline!")
     }
@@ -98,12 +73,16 @@ function addChatter(user){
 // TODO: store the symmetric key then begin chatting
 function startChatting(){
   if (chatters.size == 0){
-    //TODO: say there are no online chatters available
+    alert("You didn't choose anyone to chat with!")
   }
   else{
     console.log(chatters);
     fetchSymmetricKey(Array.from(chatters)).done(function (result) {
-      console.log(decryptSymmetricKey(result))
+      if (window.localStorage.getItem("symkey") != undefined){
+        window.localStorage.removeItem("symkey")
+      }
+      window.localStorage.setItem("symkey") = decryptSymmetricKey(result)
+      console.log( window.localStorage.getItem("symkey"))
     })
   }
 }
@@ -118,6 +97,30 @@ function decryptSymmetricKey(symKey){
 }
 
 
+// checkOnlineStatus only expects the name of the user
+function checkOnlineStatus(user){
+  var data = {'username': user}
+  return $.ajax({
+    url: 'http://localhost:8080/users/status', 
+    contentType: 'application/json',
+    type: 'POST',
+    data: JSON.stringify(data),
+    dataType: 'json',
+    success: function(result) {
+        if (result.status == "online") {
+          result.result = true
+          return result
+        }
+        else {
+          result.result = false
+          return result
+        }
+    },
+    error: function(error) {
+        console.log(`Error ${JSON.stringify(error)}`)
+    }
+  })
+}
 
 // on load, we check who is online
 function loadOnlineStatus(){
