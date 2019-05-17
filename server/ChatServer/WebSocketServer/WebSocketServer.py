@@ -1,6 +1,6 @@
 from Database import DatabaseManager
 from concurrent.futures import ThreadPoolExecutor
-from WebSocketServer.EndPoints import Users
+from WebSocketServer.EndPoints import Users, Chats
 import asyncio
 from aiohttp import web
 from aiohttp_session import setup
@@ -17,6 +17,7 @@ class WebSocketServer(object):
         self.threadPool = ThreadPoolExecutor(10)
         asyncio.get_event_loop().set_default_executor(self.threadPool)
         self.users = Users.User()
+        self.chats = Chats.Chats()
         self.private_key: RsaKey = None
         self.public_key: RsaKey = None
         self.load_key()
@@ -50,7 +51,8 @@ class WebSocketServer(object):
         app.router.add_post('/users/status', self.users.user_status)
         app.router.add_post('/users/all_users', self.users.all_users)
         app.router.add_post('/users/validate', self.users.validate)
-        app.router.add_post('/users/chat', self.users.symmetric_key)
+        app.router.add_post('/chat/initiate', self.chats.start_chat_session)
+        app.router.add_post('/chat/keys', self.chats.my_keys)
         app.router.add_delete('/users/logout', self.users.logout_single)
         app.router.add_delete('/users/logout_all', self.users.logout_all)
         return app

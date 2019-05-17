@@ -2,6 +2,7 @@ import asyncio
 from Database.Tables import ChatUserTokens, ChatUser
 from functools import partial
 from aiohttp import web
+import json
 
 
 class EndPointBase(object):
@@ -10,7 +11,10 @@ class EndPointBase(object):
         return await asyncio.get_event_loop().run_in_executor(None, partial(function_ptr, *args))
 
     async def get_token(self, request):
-        body = await request.json()
+        try:
+            body = await request.json()
+        except json.decoder.JSONDecodeError:
+            raise web.HTTPBadRequest(reason="Missing token field.")
         token = body.get('token')
         if not token:
             raise web.HTTPBadRequest(reason="Missing token field.")
