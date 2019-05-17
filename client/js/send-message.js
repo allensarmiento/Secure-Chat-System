@@ -20,7 +20,7 @@ function sendMessage() {
  * @return signatureType - Returns either rsa or dsa
  */
 function getSignatureValue() {
-    var signatureType = docuement.getElementsByName('signature');
+    var signatureType = document.getElementsByName('signature');
 
     for (let i = 0; i < signatureType.length; i++) {
         if (signatureType[i].checked) {
@@ -63,6 +63,7 @@ function verifyMsg(message, publicKey, signature) {
     return verify.verify(publicKey, signature);
 }
 
+// Executes when the user clicks the send button
 $('#send-btn').click(function() {
     event.preventDefault();
 
@@ -74,8 +75,10 @@ $('#send-btn').click(function() {
     const data = {
         token: window.localStorage.getItem("token"),
         message: message,
-        signature: signMsg(message)
+        signature: signMsg(message, privateKey) // NOTE: Need a way to get the private key
     };
+    // Viewing the data being sent in the console for debugging purposes
+    console.log(data);
 
     // Verify the message has been sent
     sendMessage(data).done(function(data) {
@@ -106,8 +109,8 @@ function sendMessage() {
     });
 }
 
+// Alternative way of sending a message by hitting the enter key
 document.onkeypress = keyPress;
-
 function keyPress(e) {
     var x = e || window.event;
     var key = (x.keyCode || x.which);
