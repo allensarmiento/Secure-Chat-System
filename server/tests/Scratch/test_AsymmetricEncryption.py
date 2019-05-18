@@ -3,9 +3,10 @@ from Crypto.PublicKey.RSA import RsaKey
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import base64
+import secrets
 
 
-class TestBase(TestCase):
+class TestAsymmetricEncryption(TestCase):
     """test class to demo asym encryption and decryption"""
 
     def setUp(self) -> None:
@@ -23,4 +24,3 @@ class TestBase(TestCase):
         cipher = PKCS1_OAEP.new(self.private_key)
         message = cipher.decrypt(recieve_cipher_bin)
         self.assertEqual(msg, message)
-
