@@ -16,7 +16,7 @@ class ChatMessages(DeclarativeBase.Base):
     user_id = Column(Integer, ForeignKey("chatusers.user_id"), nullable=False)
     message = Column(LargeBinary, nullable=False)  # key encrypted using user's public key and base 64 encoded
     timestamp = Column(DateTime, nullable=False)
-    signature_method = Column(String, default="AES", nullable=False)
+    signature_method = Column(String, default="rsa", nullable=False)
 
     object_chat_session = relationship("ChatSessions", uselist=False, back_populates="object_session_messages")
     object_user = relationship("ChatUser", uselist=False, back_populates="object_user_sent_messages")
@@ -34,7 +34,7 @@ class ChatMessages(DeclarativeBase.Base):
                 "time": str(self.timestamp),
                 "user_id" : self.object_user.get_id(),
                 "user_name" : self.object_user.get_name(),
-                "signature" : self.signature_method,
+                "signature" : self.signature_method.lower(),
                 "message": self.message.decode()
         }
 
@@ -56,7 +56,7 @@ class ChatMessages(DeclarativeBase.Base):
             db.close()
 
     @classmethod
-    def _send_message(cls, channel_id, user_id, msg, signature):
+    def _send_message(cls, channel_id, user_id, msg, signature:str):
         db = DatabaseManager.DatabaseManager.get_session()
         try:
             session = db.query(ChatSessionUsers.ChatSessionUsers).filter(
@@ -64,7 +64,8 @@ class ChatMessages(DeclarativeBase.Base):
                 ChatSessionUsers.ChatSessionUsers.user_id == user_id).one_or_none()
             if not session:
                 raise web.HTTPUnauthorized(reason="User does not have access to this chat.")
-            if signature != "AES" and signature != "DES":
+            signature = signature.lower()
+            if signature != "rsa" and signature != "des":
                 raise web.HTTPBadRequest(reason="Signature must be either AES or DES.")
             else:
                 db.add(cls(session, msg, signature))
