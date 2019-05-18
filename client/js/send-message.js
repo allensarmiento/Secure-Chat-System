@@ -18,7 +18,7 @@ function sendMessage() {
   chatbox.scrollTop = chatbox.scrollHeight;
 }
 */
-
+var messageFloor = 0;
 // Executes when the user clicks the send button.
 $('#send-btn').click(function() {
     event.preventDefault();
@@ -274,11 +274,34 @@ function checkUserName(){
 }
 
 
+//update the chatbox with new messages from the server
+// expects an array from the server, will be empty if nothing has updated
+function updateChatBox(){
+
+}
 // Timer to poll the database for messages. polls every 3.5 seconds.
 setInterval(
-    function()
+    function(messageFloor)
     {
-        console.log("IN the interval timer!!")
+        var data = {
+            'token': window.localStorage.getItem("token"),
+            'channel_id': window.localStorage.getItem("channel_session_id"),
+            'message_floor': messageFloor
+        }
+        $.ajax({
+            url: 'http://localhost:8080/users/name',
+            contentType: 'application/json',
+            type: 'POST',
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+                
+            },
+            error: function(error) {
+                console.log(`Error $({JSON.stringify(error)}`);
+            }
+        });
     }, 
     3500
 )
