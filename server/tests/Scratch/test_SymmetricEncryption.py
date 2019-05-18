@@ -23,11 +23,15 @@ class TestSymmetricEncryption(TestCase):
         msg = self.skey.encode()
         symmetric_key = base64.b64encode(cipher.encrypt(msg)).decode()
         self.assertNotEqual(symmetric_key, self.skey)
+        print("Original symm key: '{}'".format(self.skey))
+        print("Sent encrypted key using user public key: '{}'".format(symmetric_key))
 
         # client side receives key and decrypts
+        print("Private key: {}".format(self.private_kay.decode()))
         cipher = PKCS1_OAEP.new(RSA.import_key(self.private_kay))
         symmetric_key = cipher.decrypt(base64.b64decode(symmetric_key)).decode()
         self.assertEqual(self.skey, symmetric_key)
+
 
 
 

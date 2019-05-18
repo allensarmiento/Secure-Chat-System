@@ -24,7 +24,8 @@ class Chats(EndPointBase.EndPointBase):
         user = await self.get_session_user(request)
         channel_id = await self.get_field(request, "channel_id", str)
         message = await self.get_field(request, "message", str)
-        resp = await ChatMessages.ChatMessages.send_message(channel_id, user.user_id, message)
+        signature = await self.get_field(request, "signature", str)
+        resp = await ChatMessages.ChatMessages.send_message(channel_id, user.user_id, message, signature)
         return web.json_response(resp)
 
     async def get_messages(self, request: Request):
