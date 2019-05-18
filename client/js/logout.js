@@ -1,5 +1,5 @@
 // already declared in send-message.js
-// const $ = require('jQuery');
+//const $ = require('jQuery');
 
 const Url = 'http:localhost:8080/users/logout';
 
