@@ -75,3 +75,11 @@ class User(EndPointBase.EndPointBase):
         body = await request.json()
         user = await ChatUser.ChatUser.get_user_byname(body.get('username'))
         return web.json_response({'name': body.get('username'), 'status': user.get_status()})
+
+    async def user_publickey(self, request: Request):
+        await self.get_session_user(request)
+        requested_user = await self.get_field(request, "user_name", str)
+        user = await ChatUser.ChatUser.get_user_byname(requested_user)
+        if not user:
+            raise web.HTTPNotFound(reason="User: {} not found.".format(requested_user))
+        return web.json_response({'user_name': user.get_name(), 'public_key': await user.get_public_key()})

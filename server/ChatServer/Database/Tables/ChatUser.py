@@ -65,6 +65,12 @@ class ChatUser(DeclarativeBase.Base):
         except:
             return False
 
+    def _get_public_key(self):
+        return base64.b64encode(self.user_public_key).decode()
+
+    async def get_public_key(self):
+        return await asyncio.get_event_loop().run_in_executor(None, self._get_public_key)
+
     def __str__(self):
         return "ID: {} Name: {}".format(self.user_id, self.user_name)
 
