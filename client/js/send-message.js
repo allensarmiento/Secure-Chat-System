@@ -67,6 +67,11 @@ function verifyMsg(message, publicKey, signature) {
 $('#send-btn').click(function() {
     event.preventDefault();
 
+    // Obtain the private key
+    // NOTE: Error occurs on the user
+    var relativePath = path.relative(`../../user_private_key_${user.slice(-1)}.pem`);
+    var privateKey = fs.readFileSync(relativePath, "utf8");
+
     // Data is pass in:
     //  - token = username
     //  - message = message the user entered
@@ -88,7 +93,7 @@ $('#send-btn').click(function() {
     });
 });
 
-function sendMessage() {
+function sendMessage(data) {
     return $.ajax({
         url: 'http:localhost:8080/users/send',
         contentType: 'application/json',
