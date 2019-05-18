@@ -17,9 +17,12 @@ class ChatSessions(DeclarativeBase.Base):
     object_session_users = relationship("ChatSessionUsers", cascade="save-update,merge,delete,delete-orphan",
                                       uselist=True,
                                       back_populates="object_chat_session")
+    object_session_messages = relationship("ChatMessages", cascade="save-update,merge,delete,delete-orphan",
+                                      uselist=True,
+                                      back_populates="object_chat_session")
 
-    def __init__(self):
-        return
+    def get_id(self):
+        return self.channel_id
 
     @classmethod
     def _get_my_sessions(cls, user_id):

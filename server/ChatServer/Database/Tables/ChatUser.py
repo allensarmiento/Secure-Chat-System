@@ -29,6 +29,10 @@ class ChatUser(DeclarativeBase.Base):
                                       uselist=True,
                                       back_populates="object_user")
 
+    object_user_sent_messages = relationship("ChatMessages", cascade="save-update,merge,delete,delete-orphan",
+                                      uselist=True,
+                                      back_populates="object_user")
+
     def __init__(self, user_id: int, user_name: str, user_pass: str, user_status: str):
         self.user_id = user_id
         self.user_name = user_name

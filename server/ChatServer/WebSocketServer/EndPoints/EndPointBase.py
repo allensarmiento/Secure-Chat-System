@@ -21,6 +21,14 @@ class EndPointBase(object):
         else:
             return token
 
+    async def get_field(self, request, key, val_type):
+        body = await request.json()
+        val = body.get(key)
+        if not isinstance(val, val_type):
+            raise web.HTTPBadRequest(reason="Missing {} field or it is not of instance {}.".format(key, str(val_type)))
+        else:
+            return val
+
     async def get_session_user(self, request) -> ChatUser.ChatUser:
         """Loads the user database object or raises not authorized if user needs to login"""
         user = await ChatUserTokens.ChatUserTokens.get_user(await self.get_token(request))
