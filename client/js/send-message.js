@@ -104,6 +104,7 @@ function signMsg(message, privateKey) {
 
 // Verifies that the signature matches the messsage
 function verifyMsg(message, publicKey, signature) {
+    // NOTE: RSA-SHA256 or DSA-SHA256 may need to be passed in instead, but haven't been able to test the signMsg first.
     const verify = crypto.createVerify('SHA256');
     verify.update(message);
     verify.end();

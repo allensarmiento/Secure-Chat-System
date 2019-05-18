@@ -6,10 +6,15 @@ npm install
 npm start
 ```
 
-## send-message.js
-Functions implemented:
-* getSignatureValue() - checks what value is selected for either rsa or dsa
-* signMsg(message, privateKey) - Digital signature for a message using rsa or dsa
-    * **Shortcomings:** DSA-SHA256 was not found in the module, so would need to find a way to add it. The sign function needs to obtain the private key in order to work; currently unsure how to get the user value to get the relativePath. 
-* verifyMsg(message, publicKey, signature) - verifies a message
-* sendMessage() - function for ajax call to data to the server including: username, message, and signature.
+## send-message.js Notes
+User variable undefined for this call:<br>
+```
+var relativePath = path.relative(`../../user_private_key_${user.slice(-1)}.pem`);
+```
+
+Calling this has an error, assuming it doesn't like the path
+```
+var relativePath = path.relative(`../../user_private_key_1.pem`);
+```
+
+Don't think DSA-SHA256 is included in the crypto library, so may need to be imported.  
