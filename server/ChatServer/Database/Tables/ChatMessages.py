@@ -17,24 +17,27 @@ class ChatMessages(DeclarativeBase.Base):
     message = Column(LargeBinary, nullable=False)  # key encrypted using user's public key and base 64 encoded
     timestamp = Column(DateTime, nullable=False)
     signature_method = Column(String, default="rsa", nullable=False)
+    signature = Column(LargeBinary, nullable=False)
 
     object_chat_session = relationship("ChatSessions", uselist=False, back_populates="object_session_messages")
     object_user = relationship("ChatUser", uselist=False, back_populates="object_user_sent_messages")
 
 
-    def __init__(self, object_chat_session: ChatSessionUsers.ChatSessionUsers, message, signature):
+    def __init__(self, object_chat_session: ChatSessionUsers.ChatSessionUsers, message, signature_method, signature):
         self.chat_session_id = object_chat_session.chat_session_id
         self.user_id = object_chat_session.user_id
         self.timestamp = datetime.datetime.utcnow()
         self.message = message.encode()
-        self.signature_method = signature
+        self.signature = signature.encode()
+        self.signature_method = signature_method
 
     def json_message(self):
         return {"message_id": self.message_id,
                 "time": str(self.timestamp),
                 "user_id" : self.object_user.get_id(),
                 "user_name" : self.object_user.get_name(),
-                "signature" : self.signature_method.lower(),
+                "signature_method" : self.signature_method.lower(),
+                "signature" : self.signature.decode(),
                 "message": self.message.decode()
         }
 
@@ -56,7 +59,7 @@ class ChatMessages(DeclarativeBase.Base):
             db.close()
 
     @classmethod
-    def _send_message(cls, channel_id, user_id, msg, signature:str):
+    def _send_message(cls, channel_id, user_id, msg, signature:str, signature_method):
         db = DatabaseManager.DatabaseManager.get_session()
         try:
             session = db.query(ChatSessionUsers.ChatSessionUsers).filter(
@@ -64,11 +67,11 @@ class ChatMessages(DeclarativeBase.Base):
                 ChatSessionUsers.ChatSessionUsers.user_id == user_id).one_or_none()
             if not session:
                 raise web.HTTPUnauthorized(reason="User does not have access to this chat.")
-            signature = signature.lower()
-            if signature != "rsa" and signature != "des":
+            signature_method = signature_method.lower()
+            if signature_method != "rsa" and signature_method != "des":
                 raise web.HTTPBadRequest(reason="Signature must be either AES or DES.")
             else:
-                db.add(cls(session, msg, signature))
+                db.add(cls(session, msg, signature_method, signature))
                 db.commit()
                 top_message = db.query(cls).filter(cls.chat_session_id == channel_id).order_by(cls.message_id.desc()).first()
                 if top_message:
@@ -79,8 +82,8 @@ class ChatMessages(DeclarativeBase.Base):
             db.close()
 
     @classmethod
-    async def send_message(cls, channel_id, user_id, msg, signature):
-        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._send_message, channel_id, user_id, msg, signature))
+    async def send_message(cls, channel_id, user_id, msg, signature, signature_method):
+        return await asyncio.get_event_loop().run_in_executor(None, partial(cls._send_message, channel_id, user_id, msg, signature, signature_method))
 
     @classmethod
     async def get_messages(cls, channel_id, user_id, msg_floor):
