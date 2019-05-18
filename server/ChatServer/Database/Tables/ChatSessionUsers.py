@@ -18,11 +18,11 @@ class ChatSessionUsers(DeclarativeBase.Base):
     object_user = relationship("ChatUser", uselist=False, back_populates="object_user_chat_sessions")
 
 
-    def __init__(self, chat_session, chat_user: ChatUser.ChatUser):
+    def __init__(self, chat_session, chat_user: ChatUser.ChatUser, symmetric_key):
         self.object_chat_session = chat_session
         self.user_id = chat_user.get_id()
         cipher = PKCS1_OAEP.new(RSA.import_key(chat_user.user_public_key))
-        msg = secrets.token_urlsafe(128).encode()
+        msg = symmetric_key.encode()
         self.symmetric_key = base64.b64encode(cipher.encrypt(msg))
 
     def get_key(self):

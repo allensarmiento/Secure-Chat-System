@@ -39,9 +39,10 @@ class ChatSessions(DeclarativeBase.Base):
             session = cls()
             db.add(session)
             db.commit()
+            key = secrets.token_urlsafe(128)
             for user in db.query(ChatUser.ChatUser).all():
                 if user.get_name() in user_names:
-                    db.add(ChatSessionUsers.ChatSessionUsers(session, user))
+                    db.add(ChatSessionUsers.ChatSessionUsers(session, user, key))
             db.commit()
         finally:
             db.close()
