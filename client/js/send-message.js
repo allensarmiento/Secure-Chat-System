@@ -3,9 +3,6 @@ const crypto = require('crypto');
 var path = require("path");
 var fs = require("fs");
 
-// will be used to start the timer to poll database for messages
-// const util = require('util');
-// const setIntervalPromise = util.promisify(setInterval);
 /*
 function sendMessage() {
   let message = document.getElementById("message").value;
@@ -45,10 +42,11 @@ function prepareMessage(user) {
         token: window.localStorage.getItem("token"), // username
         channel_id: window.localStorage.getItem("chat_session_id"),
         message: signMsg(message, privateKey) // sign message
+        //NOTE: add method which it was signed with.
     };
     // Viewing the data being sent in the console for debugging purposes
     console.log("Data before message encryption\n", data);
-    data.message = encryptMessage(data.message);
+    data.message = encryptMessage(data.message, window.localStorage.getItem("symkey"));
     console.log("Data after message encryption", data)
     // Call the send message function and verify the message has been send.
     sendMessage(data).done(function(data) {
@@ -108,10 +106,10 @@ function signMsg(message, privateKey) {
     return sign.sign(privateKey);
 }
 
-// Verifies that the signature matches the messsage
+// Verifies that the signature matches the message
 function verifyMsg(message, publicKey, signature) {
     // NOTE: RSA-SHA256 or DSA-SHA256 may need to be passed in instead, but haven't been able to test the signMsg first.
-    const verify = crypto.createVerify('SHA256');
+    const verify = crypto.createVerify('RSA-SHA256');
     verify.update(message);
     verify.end();
     return verify.verify(publicKey, signature);
@@ -197,8 +195,8 @@ function decryptSymmetricKey(user, symkey) {
 }
 
 // Takes the user's local symmetric key and ecrypts the message after signature
-function encryptMessage(signedMsg){
-    var cipher = crypto.createCipher('aes-128-cbc', window.localStorage.getItem("symkey"))
+function encryptMessage(signedMsg, symKey){
+    var cipher = crypto.createCipher('aes-128-cbc', symKey)
     // cipher.setAutoPadding()
     var encrypted = cipher.update(signedMsg, 'utf8', 'base64')
     encrypted += cipher.final('base64')
@@ -207,13 +205,29 @@ function encryptMessage(signedMsg){
 
 // decrypts the message from the server using the symmetric key
 // NOTE: think we use base64 encoding on return? not sure.
-function decryptMessage(encMsg){
-    var decipher = crypto.createDecipher('aes-128-cbc', window.localStorage.getItem("symkey"))
+function decryptMessage(encMsg, symKey){
+    var decipher = crypto.createDecipher('aes-128-cbc', symKey)
     var decrypted = decipher.update(encMsg, 'base64', 'base64')
     decrypted += decipher.final('base64')
     return decrypted
 }
 
+// going through the methos to decrypt the message from the server
+// takes in an encrypted message
+function decryptor(message, signMethod){
+    message = decryptMessage(message, window.localStorage.getItem("symkey"))
+    // message for the enc and signature used later.
+    // NOTE: need to get public key eventually pass in signature used
+    //verifyMsg(message,"", signMethod)
+    if(true){
+        //then continue decryption
+        
+    }
+    else{
+        console.log("not a good signature!")
+    }
+
+}
 // on load, check who is online
 window.onload = function() {
     loadOnlineStatus();
@@ -276,32 +290,53 @@ function checkUserName(){
 
 //update the chatbox with new messages from the server
 // expects an array from the server, will be empty if nothing has updated
-function updateChatBox(){
+function updateChatBox(response){
+    for (var i = 0; i < response.messages.length; ++i){
+        var message = response.messages[i].message;
+        var name = response.messages[i].name;
+        message = decryptor(message, "RSA-SHA256")        
 
+        document.getElementById("message").value = "";
+        document.getElementById("chatbox").innerHTML +=
+          "<p class='chatmessage sent'>" + name + " : " + message + "</p>";
+      
+        let chatbox = document.getElementById("chatbox");
+        chatbox.scrollTop = chatbox.scrollHeight;
+        incMessageFloor();
+    }
+}
+function incMessageFloor(){
+    this.messageFloor++;
+}
+function getMessageFloor(){
+    return this.messageFloor;
 }
 // Timer to poll the database for messages. polls every 3.5 seconds.
+
 setInterval(
-    function(messageFloor)
+    function()
     {
+        var floorValue = getMessageFloor()
         var data = {
             'token': window.localStorage.getItem("token"),
-            'channel_id': window.localStorage.getItem("channel_session_id"),
-            'message_floor': messageFloor
+            'channel_id': window.localStorage.getItem("chat_session_id"),
+            'message_floor': floorValue.toString()
         }
+        console.log(data)
         $.ajax({
-            url: 'http://localhost:8080/users/name',
+            url: 'http://localhost:8080/chat/messages',
             contentType: 'application/json',
             type: 'POST',
             data: JSON.stringify(data),
             dataType: 'json',
             success: function(result) {
                 console.log(result)
-                
+                updateChatBox(result)
             },
             error: function(error) {
                 console.log(`Error $({JSON.stringify(error)}`);
             }
         });
     }, 
-    3500
+    5000
 )
