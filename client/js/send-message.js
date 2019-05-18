@@ -19,7 +19,7 @@ function sendMessage() {
 // Executes when the user clicks the send button.
 $('#send-btn').click(function() {
     event.preventDefault();
-    prepareMessage();
+    checkUserName().done(function(result){prepareMessage(result)});
 });
 // Executes when the user hits the enter button.
 document.onkeypress = keyPress;
@@ -27,25 +27,26 @@ function keyPress(e) {
     var x = e || window.event;
     var key = (x.keyCode || x.which);
     if (key === 13 || key === 3) 
-        prepareMessage();
+        checkUserName().done(function(result){prepareMessage(result)});
 }
 
 // Prepares the message for ajax request.
 // NOTE: Not sure if the token should be the sender or the recipient.
-function prepareMessage() {
+function prepareMessage(user) {
+    console.log("in prepar message", user, "SLICE: ", user.name.slice(-1))
     // NOTE: Error occurs on the user call
-    var relativePath = path.relative(`../../user_private_key_${user.slice(-1)}.pem`);
-    var privateKey = fs.readFileSync(relativePath, "utf-8");
+    var privateKey = fs.readFileSync(`../user_private_key_${user.name.slice(-1)}.pem`, "utf-8");
 
     let message = document.getElementById("message").value;
     const data = {
         token: window.localStorage.getItem("token"), // username
-        message: message, // message
-        signature: signMsg(message, privateKey) // sign message
+        channel_id: window.localStorage.getItem("chat_session_id"),
+        message: signMsg(message, privateKey) // sign message
     };
     // Viewing the data being sent in the console for debugging purposes
-    console.log(data);
-
+    console.log("Data before message encryption\n", data);
+    data = encryptMessage(data.message);
+    console.log("Data after message encryption", data)
     // Call the send message function and verify the message has been send.
     sendMessage(data).done(function(data) {
         if (data) 
@@ -54,9 +55,10 @@ function prepareMessage() {
 }
 
 // Sending the message to server with ajax
+// NOTE: need to pass along the channel_id
 function sendMessage(data) {
     return $.ajax({
-        url: 'http:localhost:8080/users/chat',
+        url: 'http:localhost:8080/chat/send',
         contentType: 'application/json',
         type: 'POST',
         data: JSON.stringify(data),
@@ -86,6 +88,7 @@ function getSignatureValue() {
 
 // Signs a message sent by a user and returns the signature.
 function signMsg(message, privateKey) {
+    console.log("in sign message: ", message)
     // Determine if using rsa, dsa, or none was selected.
     let signType = getSignatureValue();
 
@@ -144,19 +147,29 @@ function startChatting() {
     else {
         console.log(chatters);
         fetchSymmetricKey(Array.from(chatters)).done(function (result) {
+            console.log("promise fetch sym: ", result)
             if (window.localStorage.getItem("symkey") !== undefined) {
                 window.localStorage.removeItem("symkey");
             }
-        window.localStorage.setItem("symkey") = decryptSymmetricKey(result);
-        console.log(window.localStorage.getItem("symkey"));
+            checkUserName().done(function(user){
+                console.log("promise checkuser: ", user.name, result[result.length-1])
+                window.localStorage.setItem("symkey", decryptSymmetricKey(user.name.slice(-1), result[result.length-1].symmetric_key))
+                window.localStorage.setItem("chat_session_id", result[result.length-1].chat_session_id)
+                console.log("decrypted sym key", window.localStorage.getItem("symkey"));
+            });
         });
     }
 }
 
+// Adds the selected users to a channel to initiate the symmkey
+//  returns chat_session_id and symm key
 function fetchSymmetricKey(chatters) {
-    var data = {'usernames': chatters};
+    var data = {
+            'token':window.localStorage.getItem("token"),
+            'usernames': chatters
+            };
     return $.ajax({
-        url: 'http://localhost:8080/users/chat',
+        url: 'http://localhost:8080/chat/initiate',
         contentType: 'application/json',
         type: 'POST',
         data: JSON.stringify(data),
@@ -170,12 +183,20 @@ function fetchSymmetricKey(chatters) {
     });
 }
 
-function decryptSymmetricKey(symkey) {
-    var relativePath = path.relative(`../../user_private_key_${user.slice(-1)}.pem`);
-    var privateKey = fs.readFileSync(relativePath, "utf8");
-    var buffer = Buffer.from(symKey, "base64");
+// takes the user's id / number form the users name ex: Name1
+// and a key to be decrypted by our secret key
+function decryptSymmetricKey(user, symkey) {
+    console.log("encrypted sym key", symkey)
+    var privateKey = fs.readFileSync(`../user_private_key_${user}.pem`, "utf8");
+    var buffer = Buffer.from(symkey, "base64");
     var decrypted = crypto.privateDecrypt(privateKey, buffer);
     return decrypted.toString("utf8");
+}
+
+// Takes the user's local symmetric key and ecrypts the message after signature
+function encryptMessage(){
+    
+    return data
 }
 
 // on load, check who is online
@@ -194,7 +215,7 @@ function loadOnlineStatus() {
     }
 }
 
-// checkOnlineStatus
+// checks online status of the user using their username
 function checkOnlineStatus(user) {
     var data = {'username': user};
     return $.ajax({
@@ -214,6 +235,25 @@ function checkOnlineStatus(user) {
         },
         error: function(error) {
             console.log(`Error ${JSON.stringify(error)}`);
+        }
+    });
+}
+
+// grabbing the name of the current user that owns the session id
+function checkUserName(){
+    var data = {'token': window.localStorage.getItem("token")}
+    return $.ajax({
+        url: 'http://localhost:8080/users/name',
+        contentType: 'application/json',
+        type: 'POST',
+        data: JSON.stringify(data),
+        dataType: 'json',
+        success: function(result) {
+            console.log(result)
+            return result;
+        },
+        error: function(error) {
+            console.log(`Error $({JSON.stringify(error)}`);
         }
     });
 }
