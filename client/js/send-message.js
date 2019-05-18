@@ -3,6 +3,9 @@ const crypto = require('crypto');
 var path = require("path");
 var fs = require("fs");
 
+// will be used to start the timer to poll database for messages
+// const util = require('util');
+// const setIntervalPromise = util.promisify(setInterval);
 /*
 function sendMessage() {
   let message = document.getElementById("message").value;
@@ -38,14 +41,14 @@ function prepareMessage(user) {
     var privateKey = fs.readFileSync(`../user_private_key_${user.name.slice(-1)}.pem`, "utf-8");
 
     let message = document.getElementById("message").value;
-    const data = {
+    var data = {
         token: window.localStorage.getItem("token"), // username
         channel_id: window.localStorage.getItem("chat_session_id"),
         message: signMsg(message, privateKey) // sign message
     };
     // Viewing the data being sent in the console for debugging purposes
     console.log("Data before message encryption\n", data);
-    data = encryptMessage(data.message);
+    data.message = encryptMessage(data.message);
     console.log("Data after message encryption", data)
     // Call the send message function and verify the message has been send.
     sendMessage(data).done(function(data) {
@@ -194,9 +197,21 @@ function decryptSymmetricKey(user, symkey) {
 }
 
 // Takes the user's local symmetric key and ecrypts the message after signature
-function encryptMessage(){
-    
-    return data
+function encryptMessage(signedMsg){
+    var cipher = crypto.createCipher('aes-128-cbc', window.localStorage.getItem("symkey"))
+    // cipher.setAutoPadding()
+    var encrypted = cipher.update(signedMsg, 'utf8', 'base64')
+    encrypted += cipher.final('base64')
+    return encrypted
+}
+
+// decrypts the message from the server using the symmetric key
+// NOTE: think we use base64 encoding on return? not sure.
+function decryptMessage(encMsg){
+    var decipher = crypto.createDecipher('aes-128-cbc', window.localStorage.getItem("symkey"))
+    var decrypted = decipher.update(encMsg, 'base64', 'base64')
+    decrypted += decipher.final('base64')
+    return decrypted
 }
 
 // on load, check who is online
@@ -257,3 +272,13 @@ function checkUserName(){
         }
     });
 }
+
+
+// Timer to poll the database for messages. polls every 3.5 seconds.
+setInterval(
+    function()
+    {
+        console.log("IN the interval timer!!")
+    }, 
+    3500
+)
