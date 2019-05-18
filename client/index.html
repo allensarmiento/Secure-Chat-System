@@ -15,7 +15,7 @@
       </div>
 
       <input id="message" type="text" name="message">
-      <button onclick="sendMessage()">Send</button>
+      <button id="send-btn">Send</button>
     </section>
 
     <section id="online">
@@ -26,12 +26,14 @@
         <p><span id="Name3" class="profile-img" onclick="addChatter(this.id)">N</span>Nathan</p>
         <p><span id="Name4" class="profile-img" onclick="addChatter(this.id)">S</span>Stephen</p>
         <p><span id="Name5" class="profile-img" onclick="addChatter(this.id)">J</span>Jasper</p>
+        <button id="start-btn" onclick="startChatting()">Add to Chat</button>
+        <br/><br/><br/>
         <button id="logout-btn">Logout</button>
       </div>
     </section>
     <section class="signature-type">
       <div>
-        <span><input type="radio" name="signature" value="rsa">RSA</span>
+        <span><input type="radio" name="signature" value="rsa" checked="checked">RSA</span>
         <span><input type="radio" name="signature" value="dsa">DSA</span>
       </div>
     </section>

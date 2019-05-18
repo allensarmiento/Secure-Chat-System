@@ -14,9 +14,9 @@
 ## Programming Languages/Tools:
   * Electron
 
-## How to Execute
-Clone this repository ane make sure to have Node.js installed. Execute the following:  
+## How to Execute (Client)
 ```
+cd client
 npm install  
 npm start  
 ```
@@ -28,6 +28,16 @@ npm install --save-dev electron-rebuild
 
 # Every time you run "npm install", run this:
 ./node_modules/.bin/electron-rebuild
+```
+
+## How to Execute (Server)
+```
+cd server
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+cd ..
+python3 server/ChatServer
 ```
 
 ## Description (To be deleted before submission):
