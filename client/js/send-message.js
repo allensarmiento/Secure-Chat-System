@@ -23,7 +23,10 @@ function setMessageFloor(latesMessageId){ this.messageFloor = latesMessageId}
 // Executes when the user clicks the send button.
 $('#send-btn').click(function() {
     event.preventDefault();
-    checkUserName().done(function(result){prepareMessage(result)});
+    checkUserName().done(
+        function(result){
+            prepareMessage(result)
+    });
 });
 
 // Executes when the user hits the enter button.
@@ -257,7 +260,7 @@ function checkUserName(){
         data: JSON.stringify(data),
         dataType: 'json',
         success: function(result) {
-            console.log(result)
+            console.log('user done: ', result)
             return result;
         },
         error: function(error) {
@@ -319,12 +322,14 @@ function updateChatBox(response, encSymKey){
             response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
             if(verifyMsg(response.message, _base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
                 document.getElementById("message").value = "";
+                // If the user sent the message, it goes on right side
+                // If the user received the message, it goes on left side
                 if (result.user_name === "Name" + window.localStorage.getItem("chat_id")) {
                     document.getElementById("chatbox").innerHTML +=
-                    "<p class='chatmessage sent'>" + result.user_name + " : " + response.message + "</p>";
+                    "<p class='chatmessage sent'>" + getUsername(result.user_name) + " : " + response.message + "</p>";
                 } else {
                     document.getElementById("chatbox").innerHTML +=
-                    "<p class='chatmessage received'>" + result.user_name + " : " + response.message + "</p>";
+                    "<p class='chatmessage received'>" + getUsername(result.user_name) + " : " + response.message + "</p>";
                 }
               
                 let chatbox = document.getElementById("chatbox");
@@ -399,4 +404,17 @@ function _base64ToArrayBuffer(base64) {
         bytes[i] = binary_string.charCodeAt(i);
     }
     return bytes.buffer;
+}
+
+// Returns the corresponding user name with the associated
+// user id. Example: Name1 becomes Allen, Name2 becomes Hector, etc.
+function getUsername(userId) {
+    let username = "";
+    if (userId === "Name1") username = "Allen";
+    else if (userId === "Name2") username = "Hector";
+    else if (userId === "Name3") username = "Nathan";
+    else if (userId === "Name4") username = "Stephen";
+    else if (userId === "Name5") username = "Jasper";
+
+    return username;
 }
