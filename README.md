@@ -38,7 +38,7 @@ python3 server/ChatServer
 ```
 
 ## Description
-This project implements a secure chat system where one or more users can join together in a group chat. Each user must be registered with the chat server through a username and password. Security is established through the use of a symmetric key between all users within the chat.
+This project implements a secure chat system where one or more users can join together in a group chat. Each user must be registered with the chat server through a username and password. Security is established through the use of a symmetric key between all users within the chat. Users send messages by digitally signing the message with RSA or DSA.
 
 ## Programming Languages/Tools:
 **Electron (HTML, CSS, JavaScript, jQuery):** We chose to use Electron because it is a technology that is used to build desktop applications and we create our secure chat application with HTML, CSS, JavaScript, and jQuery. This is the front-end portion of the project. Some of the modules we needed to import include: jQuery to handle ajax requests, crypto for creating digital signatures, and bcrypt to hash and salt passwords.<br><br>
