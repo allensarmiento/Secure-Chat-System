@@ -327,6 +327,7 @@ function updateChatBox(response, encSymKey){
                 // setMessageFloor(response.messages[0].message_id)
             }
             else{
+                alert("BAD SIGNATURE BEEN TAMPERED WITH")
                 console.log("decryptor invalid signature?")
             }
         })
