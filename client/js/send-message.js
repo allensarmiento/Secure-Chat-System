@@ -18,6 +18,7 @@ function sendMessage() {
 var messageFloor = 0;
 function incMessageFloor(){ this.messageFloor++;}
 function getMessageFloor(){ return this.messageFloor; }
+function setMessageFloor(latesMessageId){ this.messageFloor = latesMessageId}
 
 // Executes when the user clicks the send button.
 $('#send-btn').click(function() {
@@ -92,41 +93,24 @@ function signMsg(message, privateKey) {
     // Determine if using rsa, dsa, or none was selected.
     let signType = getSignatureValue();
     let sign;
-    if (signType === 'rsa') {
-        sign = crypto.createSign('RSA-SHA256');
-        sign.update(message);
-        sign.end();
-        return sign.sign(privateKey);
-    }
-    else if (signType === 'dsa') {
-        sign = crypto.createSign('DSS1')
-        sign.update(message);
-        sign.end();
-        return sign.sign(privateKey);
-    }
-    
+    if (signType === 'rsa') {sign = crypto.createSign('RSA-SHA256');}
+    else if (signType === 'dsa') {sign = crypto.createSign('DSS1')}
+    sign.update(message);
+    sign.end();
+    return sign.sign(privateKey);
 }
 
 // Verifies that the signature matches the message
 // NOTE: THERE IS SOMETHING WRONG WITH THE WAY I'M DECODING FROM THE SERVER
 function verifyMsg(message, signature, publicKey, signature_method) {
     // NOTE: RSA-SHA256 or DSA-SHA256 may need to be passed in instead, but haven't been able to test the signMsg first.
-    let sign;
-    if (signature_method === 'rsa') {
-        var uint8View = new Uint8Array(signature);
-        const verify = crypto.createVerify('RSA-SHA256');
-        verify.update(message);
-        verify.end();
-        return verify.verify(publicKey, uint8View);
-    }
-    else if (signature_method === 'dsa') {
-        var uint8View = new Uint8Array(signature);
-        const verify = crypto.createVerify('DSS1');
-        verify.update(message);
-        verify.end();
-        return verify.verify(publicKey, uint8View);
-    }
-   
+    var uint8View = new Uint8Array(signature);
+    var verify;
+    if (signature_method === 'rsa') {verify = crypto.createVerify('RSA-SHA256');}
+    else if (signature_method === 'dsa') {verify = crypto.createVerify('DSS1');}
+    verify.update(message);
+    verify.end();
+    return verify.verify(publicKey, uint8View);   
 }
 
 
@@ -307,24 +291,23 @@ function decryptMessage(encMsg, symKey){
 //update the chatbox with new messages from the server
 // expects an array from the server, will be empty if nothing has updated
 // NOTE: replace rsa-sha256 with signature_method
-function updateChatBox(response){
+function updateChatBox(response, encSymKey){
     for (var i = 0; i < response.messages.length; ++i){
         var message = response.messages[i].message;
         var signature = response.messages[i].signature;
         var signMethod = response.messages[i].signature_method;
         var name = response.messages[i].user_name;
+        window.localStorage.setItem("symkey", decryptSymmetricKey(window.localStorage.getItem("chat_id").slice(-1), encSymKey))
         getPublicKey(window.localStorage.getItem("token"), name).done(function(result){
             response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
             if(verifyMsg(response.message, _base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
-                console.log("WE GOT OUR MESSAGE", response.message)
-                console.log("results:", result)
                 document.getElementById("message").value = "";
                 document.getElementById("chatbox").innerHTML +=
                   "<p class='chatmessage sent'>" + result.user_name + " : " + response.message + "</p>";
               
                 let chatbox = document.getElementById("chatbox");
                 chatbox.scrollTop = chatbox.scrollHeight;
-                incMessageFloor();
+                setMessageFloor(response.messages[0].message_id)
             }
             else{
                 console.log("decryptor invalid signature?")
@@ -337,29 +320,50 @@ function updateChatBox(response){
 setInterval(
     function()
     {
+        loadOnlineStatus()
         var floorValue = getMessageFloor()
-        var data = {
-            'token': window.localStorage.getItem("token"),
-            'channel_id': window.localStorage.getItem("chat_session_id"),
-            'message_floor': floorValue.toString()
-        }
-        $.ajax({
-            url: 'http://localhost:8080/chat/messages',
-            contentType: 'application/json',
-            type: 'POST',
-            data: JSON.stringify(data),
-            dataType: 'json',
-            success: function(result) {
-                updateChatBox(result)
-            },
-            error: function(error) {
-                console.log(`Error $({JSON.stringify(error)}`);
+        getActiveSession(window.localStorage.getItem("token")).done(function(result) {
+            var encSymKey = result[result.length-1].symmetric_key
+            var data = {
+                'token': window.localStorage.getItem("token"),
+                'channel_id': result[result.length-1].chat_session_id.toString(),
+                'message_floor': floorValue.toString()
             }
-        });
+            $.ajax({
+                url: 'http://localhost:8080/chat/messages',
+                contentType: 'application/json',
+                type: 'POST',
+                data: JSON.stringify(data),
+                dataType: 'json',
+                success: function(result) {
+                    updateChatBox(result, encSymKey)
+                },
+                error: function(error) {
+                    console.log(`Error ${JSON.stringify(error)}`);
+                }
+            });
+        })
     }, 
     5000
 )
 
+function getActiveSession(token){
+    var data = {'token': token}
+    return $.ajax({
+        url: 'http://localhost:8080/chat/keys',
+        contentType: 'application/json',
+        type: 'POST',
+        data: JSON.stringify(data),
+        dataType: 'json',
+        success: function(result) {
+            window.localStorage.setItem("chat_session_id", result[result.length-1].chat_session_id)
+            return result
+        },
+        error: function(error) {
+            console.log(`Error ${JSON.stringify(error)}`);
+        }
+    });
+}
 function _base64ToArrayBuffer(base64) {
     var binary_string =  window.atob(base64);
     var len = binary_string.length;
