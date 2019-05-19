@@ -3,22 +3,10 @@ const crypto = require('crypto');
 var path = require("path");
 var fs = require("fs");
 
-/*
-function sendMessage() {
-  let message = document.getElementById("message").value;
-  document.getElementById("message").value = "";
-
-  document.getElementById("chatbox").innerHTML +=
-    "<p class='chatmessage sent'>" + message + "</p>";
-
-  let chatbox = document.getElementById("chatbox");
-  chatbox.scrollTop = chatbox.scrollHeight;
-}
-*/
 var messageFloor = 0;
-function incMessageFloor(){ this.messageFloor++;}
+function incMessageFloor(){ this.messageFloor++; }
 function getMessageFloor(){ return this.messageFloor; }
-function setMessageFloor(latesMessageId){ this.messageFloor = latesMessageId}
+function setMessageFloor(latesMessageId){ this.messageFloor = latesMessageId }
 
 // Executes when the user clicks the send button.
 $('#send-btn').click(function() {
@@ -291,7 +279,6 @@ function checkUserId(){
 // Takes the user's local symmetric key and ecrypts the message after signature
 function encryptMessage(signedMsg, symKey){
     var cipher = crypto.createCipher('aes-128-cbc', symKey)
-    // cipher.setAutoPadding()
     var encrypted = cipher.update(signedMsg, 'utf8', 'base64')
     encrypted += cipher.final('base64')
     return encrypted
@@ -309,7 +296,7 @@ function decryptMessage(encMsg, symKey){
 // going through the methos to decrypt the message from the server
 // takes in an encrypted message
 
-//update the chatbox with new messages from the server
+// update the chatbox with new messages from the server
 // expects an array from the server, will be empty if nothing has updated
 function updateChatBox(response, encSymKey){
     for (var i = 0; i < response.messages.length; ++i){
@@ -334,7 +321,6 @@ function updateChatBox(response, encSymKey){
               
                 let chatbox = document.getElementById("chatbox");
                 chatbox.scrollTop = chatbox.scrollHeight;
-                // setMessageFloor(response.messages[0].message_id)
             }
             else{
                 alert("BAD SIGNATURE BEEN TAMPERED WITH")

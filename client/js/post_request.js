@@ -1,5 +1,3 @@
-//TODO: at some point remove all console.log statements
-
 'use strict';
 let crypto;
 try {
