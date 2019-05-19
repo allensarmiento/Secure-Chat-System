@@ -68,8 +68,8 @@ class ChatMessages(DeclarativeBase.Base):
             if not session:
                 raise web.HTTPUnauthorized(reason="User does not have access to this chat.")
             signature_method = signature_method.lower()
-            if signature_method != "rsa" and signature_method != "des":
-                raise web.HTTPBadRequest(reason="Signature must be either AES or DES.")
+            if signature_method != "rsa" and signature_method != "dsa":
+                raise web.HTTPBadRequest(reason="Signature must be either RSA or DSA.")
             else:
                 db.add(cls(session, msg, signature_method, signature))
                 db.commit()
