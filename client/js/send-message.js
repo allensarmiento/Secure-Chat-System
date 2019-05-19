@@ -48,7 +48,8 @@ function prepareMessage(user) {
         signature: signMsg(message, privateKey), // sign message (should be one way hash)
         message: encryptMessage(message, window.localStorage.getItem("symkey")) // encrypt message
     };
-    console.log("IN PREPARE MESSAGE\n", data);
+    console.log(data.signature);
+    data.signature = data.signature.toString('base64')
     // Viewing the data being sent in the console for debugging purposes
     // Call the send message function and verify the message has been send.
     sendMessage(data).done(function(data) {
@@ -88,7 +89,6 @@ function getSignatureValue() {
 
 // Signs a message sent by a user and returns the signature.
 function signMsg(message, privateKey) {
-    console.log("in sign message: ", message)
     // Determine if using rsa, dsa, or none was selected.
     let signType = getSignatureValue();
     let sign;
@@ -97,17 +97,19 @@ function signMsg(message, privateKey) {
     sign.update(message);
     sign.end();
 
-    return sign.sign(privateKey, 'base64');
+    return sign.sign(privateKey);
 }
 
 // Verifies that the signature matches the message
-function verifyMsg(message, publicKey, signature) {
-    console.log("PUBLIC KEy\n", publicKey)
+// NOTE: THERE IS SOMETHING WRONG WITH THE WAY I'M DECODING FROM THE SERVER
+function verifyMsg(signature, publicKey, signature_method) {
+    var uint8View = new Uint8Array(signature);
+    console.log(uint8View)
     // NOTE: RSA-SHA256 or DSA-SHA256 may need to be passed in instead, but haven't been able to test the signMsg first.
-    const verify = crypto.createVerify(signature);
-    verify.update(message);
+    const verify = crypto.createVerify(signature_method);
+    verify.update(uint8View);
     verify.end();
-    return verify.verify(publicKey, signature, 'base64');
+    return verify.verify(publicKey, uint8View);
 }
 
 
@@ -145,13 +147,10 @@ function startChatting() {
     else {
         console.log(chatters);
         fetchSymmetricKey(Array.from(chatters)).done(function (result) {
-            console.log("promise fetch sym: ", result)
             if (window.localStorage.getItem("symkey") !== undefined) { window.localStorage.removeItem("symkey"); }
             checkUserName().done(function(user){
-                console.log("promise checkuser: ", user.name, result[result.length-1])
                 window.localStorage.setItem("symkey", decryptSymmetricKey(user.name.slice(-1), result[result.length-1].symmetric_key))
                 window.localStorage.setItem("chat_session_id", result[result.length-1].chat_session_id)
-                console.log("decrypted sym key", window.localStorage.getItem("symkey"));
             });
         });
     }
@@ -182,7 +181,6 @@ function fetchSymmetricKey(chatters) {
 // takes the user's id / number form the users name ex: Name1
 // and a key to be decrypted by our secret key
 function decryptSymmetricKey(user, symkey) {
-    console.log("encrypted sym key", symkey)
     var privateKey = fs.readFileSync(`../user_private_key_${user}.pem`, "utf8");
     var buffer = Buffer.from(symkey, "base64");
     var decrypted = crypto.privateDecrypt(privateKey, buffer);
@@ -200,7 +198,6 @@ function getPublicKey(token, user){
         'token':token,
         'user_name':user
     }
-    console.log("GET PUBLIC KEY\n", data)
     return $.ajax({
         url: 'http://localhost:8080/users/public_key', 
         contentType: 'application/json',
@@ -284,26 +281,11 @@ function decryptMessage(encMsg, symKey){
     var decipher = crypto.createDecipher('aes-128-cbc', symKey)
     var decrypted = decipher.update(encMsg, 'base64', 'base64')
     decrypted += decipher.final('base64')
-    return decrypted.toString("utf8")
+    return atob(decrypted)
 }
 
 // going through the methos to decrypt the message from the server
 // takes in an encrypted message
-function decryptor(message, signature, signMethod){
-    // message for the enc and signature used later.
-    return checkUserName().done(function(user){
-        getPublicKey(window.localStorage.getItem("token"), user.name).done(function(result){
-            console.log("IN GET PUBLIC KEY", result)
-            if(verifyMsg(signature, atob(result.public_key), signMethod)){
-                message = decryptMessage(message, window.localStorage.getItem("symkey"))
-                return message
-            }
-            else{
-                console.log("INVALID SIGNATURE")
-            }
-        })
-    })
-}
 
 //update the chatbox with new messages from the server
 // expects an array from the server, will be empty if nothing has updated
@@ -311,19 +293,28 @@ function decryptor(message, signature, signMethod){
 function updateChatBox(response){
     for (var i = 0; i < response.messages.length; ++i){
         var message = response.messages[i].message;
-        var name = response.messages[i].name;
         var signature = response.messages[i].signature;
         var signMethod = response.messages[i].signature_method;
-        decryptor(message, signature, "RSA-SHA256").done(function(result){
-            console.log("RESULT FORM DECRYPTOR\n", result, "\nMESSSAGE,, ", message, "\nNAME:", name)
+        var name = response.messages[i].user_name;
+        console.log("after database ", signature)
+        if(signMethod == 'rsa'){
+            signMethod = 'RSA-SHA256'
+        }
+        getPublicKey(window.localStorage.getItem("token"), name).done(function(result){
+            if(verifyMsg(_base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
+                response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
+            }
+            else{
+                console.log("decryptor invalid signature?")
+            }
+        })
             document.getElementById("message").value = "";
             document.getElementById("chatbox").innerHTML +=
-              "<p class='chatmessage sent'>" + name + " : " + message + "</p>";
+              "<p class='chatmessage sent'>" + result.name + " : " + result.message + "</p>";
           
             let chatbox = document.getElementById("chatbox");
             chatbox.scrollTop = chatbox.scrollHeight;
             incMessageFloor();
-        })
     }
 }
 
@@ -337,7 +328,6 @@ setInterval(
             'channel_id': window.localStorage.getItem("chat_session_id"),
             'message_floor': floorValue.toString()
         }
-        console.log(data)
         $.ajax({
             url: 'http://localhost:8080/chat/messages',
             contentType: 'application/json',
@@ -345,7 +335,6 @@ setInterval(
             data: JSON.stringify(data),
             dataType: 'json',
             success: function(result) {
-                console.log(result)
                 updateChatBox(result)
             },
             error: function(error) {
@@ -353,5 +342,15 @@ setInterval(
             }
         });
     }, 
-    10000
+    5000
 )
+
+function _base64ToArrayBuffer(base64) {
+    var binary_string =  window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
