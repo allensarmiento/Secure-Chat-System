@@ -37,7 +37,6 @@ function keyPress(e) {
 
 //============= PREP AND SIGN MESSAGING STUFFS =============
 // Prepares the message for ajax request.
-// NOTE: Not sure if the token should be the sender or the recipient.
 function prepareMessage(user) {
     var privateKey = fs.readFileSync(`../user_private_key_${user.name.slice(-1)}.pem`, "utf-8");
 
@@ -149,8 +148,8 @@ function startChatting() {
         console.log(chatters);
         fetchSymmetricKey(Array.from(chatters)).done(function (result) {
             if (window.localStorage.getItem("symkey") !== undefined) { window.localStorage.removeItem("symkey"); }
-            checkUserName().done(function(user){
-                window.localStorage.setItem("symkey", decryptSymmetricKey(user.name.slice(-1), result[result.length-1].symmetric_key))
+            checkUserId().done(function(user){
+                window.localStorage.setItem("symkey", decryptSymmetricKey(user.id, result[result.length-1].symmetric_key))
                 window.localStorage.setItem("chat_session_id", result[result.length-1].chat_session_id)
             });
         });
@@ -262,7 +261,26 @@ function checkUserName(){
             return result;
         },
         error: function(error) {
-            console.log(`Error $({JSON.stringify(error)}`);
+            console.log(`Error ${JSON.stringify(error)}`);
+        }
+    });
+}
+
+// grabbing the name of the current user that owns the session id
+function checkUserId(){
+    var data = {'token': window.localStorage.getItem("token")}
+    return $.ajax({
+        url: 'http://localhost:8080/users/id',
+        contentType: 'application/json',
+        type: 'POST',
+        data: JSON.stringify(data),
+        dataType: 'json',
+        success: function(result) {
+            console.log("IN CHECK USER ID", result)
+            return result;
+        },
+        error: function(error) {
+            console.log(`Error ${JSON.stringify(error)}`);
         }
     });
 }
@@ -297,7 +315,7 @@ function updateChatBox(response, encSymKey){
         var signature = response.messages[i].signature;
         var signMethod = response.messages[i].signature_method;
         var name = response.messages[i].user_name;
-        window.localStorage.setItem("symkey", decryptSymmetricKey(window.localStorage.getItem("chat_id").slice(-1), encSymKey))
+        window.localStorage.setItem("symkey", decryptSymmetricKey(window.localStorage.getItem("chat_id"), encSymKey))
         getPublicKey(window.localStorage.getItem("token"), name).done(function(result){
             response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
             if(verifyMsg(response.message, _base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
@@ -307,7 +325,7 @@ function updateChatBox(response, encSymKey){
               
                 let chatbox = document.getElementById("chatbox");
                 chatbox.scrollTop = chatbox.scrollHeight;
-                setMessageFloor(response.messages[0].message_id)
+                // setMessageFloor(response.messages[0].message_id)
             }
             else{
                 console.log("decryptor invalid signature?")
@@ -336,6 +354,10 @@ setInterval(
                 data: JSON.stringify(data),
                 dataType: 'json',
                 success: function(result) {
+                    console.log(result)
+                    if(result.messages[result.messages.length-1].message_id != undefined){
+                        setMessageFloor(result.messages[result.messages.length-1].message_id)
+                    }
                     updateChatBox(result, encSymKey)
                 },
                 error: function(error) {
