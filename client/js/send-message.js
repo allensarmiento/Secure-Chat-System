@@ -92,24 +92,41 @@ function signMsg(message, privateKey) {
     // Determine if using rsa, dsa, or none was selected.
     let signType = getSignatureValue();
     let sign;
-    if (signType === 'rsa') { sign = crypto.createSign('RSA-SHA256'); }
-    else if (signType === 'dsa') { sign = crypto.createSign('DSA-SHA256'); }
-    sign.update(message);
-    sign.end();
-
-    return sign.sign(privateKey);
+    if (signType === 'rsa') {
+        sign = crypto.createSign('RSA-SHA256');
+        sign.update(message);
+        sign.end();
+        return sign.sign(privateKey);
+    }
+    else if (signType === 'dsa') {
+        sign = crypto.createSign('DSS1')
+        sign.update(message);
+        sign.end();
+        return sign.sign(privateKey);
+    }
+    
 }
 
 // Verifies that the signature matches the message
 // NOTE: THERE IS SOMETHING WRONG WITH THE WAY I'M DECODING FROM THE SERVER
-function verifyMsg(signature, publicKey, signature_method) {
-    var uint8View = new Uint8Array(signature);
-    console.log(uint8View)
+function verifyMsg(message, signature, publicKey, signature_method) {
     // NOTE: RSA-SHA256 or DSA-SHA256 may need to be passed in instead, but haven't been able to test the signMsg first.
-    const verify = crypto.createVerify(signature_method);
-    verify.update(uint8View);
-    verify.end();
-    return verify.verify(publicKey, uint8View);
+    let sign;
+    if (signature_method === 'rsa') {
+        var uint8View = new Uint8Array(signature);
+        const verify = crypto.createVerify('RSA-SHA256');
+        verify.update(message);
+        verify.end();
+        return verify.verify(publicKey, uint8View);
+    }
+    else if (signature_method === 'dsa') {
+        var uint8View = new Uint8Array(signature);
+        const verify = crypto.createVerify('DSS1');
+        verify.update(message);
+        verify.end();
+        return verify.verify(publicKey, uint8View);
+    }
+   
 }
 
 
@@ -296,25 +313,23 @@ function updateChatBox(response){
         var signature = response.messages[i].signature;
         var signMethod = response.messages[i].signature_method;
         var name = response.messages[i].user_name;
-        console.log("after database ", signature)
-        if(signMethod == 'rsa'){
-            signMethod = 'RSA-SHA256'
-        }
         getPublicKey(window.localStorage.getItem("token"), name).done(function(result){
-            if(verifyMsg(_base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
-                response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
+            response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
+            if(verifyMsg(response.message, _base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
+                console.log("WE GOT OUR MESSAGE", response.message)
+                console.log("results:", result)
+                document.getElementById("message").value = "";
+                document.getElementById("chatbox").innerHTML +=
+                  "<p class='chatmessage sent'>" + result.user_name + " : " + response.message + "</p>";
+              
+                let chatbox = document.getElementById("chatbox");
+                chatbox.scrollTop = chatbox.scrollHeight;
+                incMessageFloor();
             }
             else{
                 console.log("decryptor invalid signature?")
             }
         })
-            document.getElementById("message").value = "";
-            document.getElementById("chatbox").innerHTML +=
-              "<p class='chatmessage sent'>" + result.name + " : " + result.message + "</p>";
-          
-            let chatbox = document.getElementById("chatbox");
-            chatbox.scrollTop = chatbox.scrollHeight;
-            incMessageFloor();
     }
 }
 
