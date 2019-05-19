@@ -308,7 +308,6 @@ function decryptMessage(encMsg, symKey){
 
 //update the chatbox with new messages from the server
 // expects an array from the server, will be empty if nothing has updated
-// NOTE: replace rsa-sha256 with signature_method
 function updateChatBox(response, encSymKey){
     for (var i = 0; i < response.messages.length; ++i){
         var message = response.messages[i].message;
