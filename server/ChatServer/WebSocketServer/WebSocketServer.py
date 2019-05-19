@@ -47,7 +47,7 @@ class WebSocketServer(object):
         setup(app, EncryptedCookieStorage(secret_key))
         app.router.add_post('/login', self.users.login)
         app.router.add_post('/users/name', self.users.user_name)
-        app.router.add_post('/users/id', self.users.user_name)
+        app.router.add_post('/users/id', self.users.user_id)
         app.router.add_post('/users/status', self.users.user_status)
         app.router.add_post('/users/public_key', self.users.user_publickey)
         app.router.add_post('/users/all_users', self.users.all_users)
