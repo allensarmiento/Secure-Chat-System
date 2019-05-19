@@ -9,10 +9,8 @@
     <h1 id="title">Welcome to Secure Chat!</h1>
     
     <section id="chat">
-      <div class="active-chat" id="activeInChat">Chat with?</div><!-- Change text to the selected users -->
-      <div id="chatbox">
-        <p class="chatmessage received">Hello</p>
-      </div>
+
+      <div id="chatbox"></div>
 
       <input id="message" type="text" name="message">
       <button id="send-btn">Send</button>
@@ -21,6 +19,7 @@
     <section id="online">
       <div id="users">
         <h1>Users</h1>
+        <div class="active-chat" id="activeInChat">Chat with?</div><!-- Change text to the selected users -->
         <p><span id="Name1" class="profile-img" onclick="addChatter(this.id)">A</span>Allen</p>
         <p><span id="Name2" class="profile-img" onclick="addChatter(this.id)">H</span>Hector</p>
         <p><span id="Name3" class="profile-img" onclick="addChatter(this.id)">N</span>Nathan</p>

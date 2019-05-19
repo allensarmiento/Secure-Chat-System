@@ -319,8 +319,13 @@ function updateChatBox(response, encSymKey){
             response.message = decryptMessage(message, window.localStorage.getItem("symkey"))
             if(verifyMsg(response.message, _base64ToArrayBuffer(signature), atob(result.public_key), signMethod)){
                 document.getElementById("message").value = "";
-                document.getElementById("chatbox").innerHTML +=
-                  "<p class='chatmessage sent'>" + result.user_name + " : " + response.message + "</p>";
+                if (result.user_name === "Name" + window.localStorage.getItem("chat_id")) {
+                    document.getElementById("chatbox").innerHTML +=
+                    "<p class='chatmessage sent'>" + result.user_name + " : " + response.message + "</p>";
+                } else {
+                    document.getElementById("chatbox").innerHTML +=
+                    "<p class='chatmessage received'>" + result.user_name + " : " + response.message + "</p>";
+                }
               
                 let chatbox = document.getElementById("chatbox");
                 chatbox.scrollTop = chatbox.scrollHeight;
