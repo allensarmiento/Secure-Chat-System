@@ -27,12 +27,11 @@ $('#btn').click(function() {
         'username': $('#username').val(),
         'password': hashAndSalt($('#password').val())
     };
-    console.log(data)
   
     // since web requests are asynchronous we need to make promises
     loginUser(data).done(function(data){
         window.localStorage.setItem("token", data.token)
-        console.log(window.localStorage.getItem("token"))
+        window.localStorage.setItem("chat_id", data.id)
         if(data){
             window.location.href = "index.html"
         }
