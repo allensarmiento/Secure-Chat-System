@@ -7,7 +7,7 @@ import traceback
 
 class User(EndPointBase.EndPointBase):
     async def login(self, request: Request):
-        print("Line 10 in Users.py\n", await request.json())
+        #print("Line 10 in Users.py\n", await request.json())
         try:
             body = await request.json()
             user_name = body.get('username')
@@ -71,7 +71,7 @@ class User(EndPointBase.EndPointBase):
     
     async def user_status(self, request: Request):
         """returns the user's status"""
-        print("user_status in Users.py\n", await request.json())
+        #print("user_status in Users.py\n", await request.json())
         body = await request.json()
         user = await ChatUser.ChatUser.get_user_byname(body.get('username'))
         return web.json_response({'name': body.get('username'), 'status': user.get_status()})
